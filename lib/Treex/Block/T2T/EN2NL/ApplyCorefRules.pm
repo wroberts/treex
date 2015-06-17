@@ -5,6 +5,7 @@ use Moose;
 use Treex::Core::Common;
 
 use Treex::Tool::Coreference::NodeFilter::PersPron;
+use Treex::Tool::Coreference::NodeFilter::RelPron;
 
 extends 'Treex::Core::Block';
 
@@ -14,6 +15,14 @@ sub process_tnode {
     my $src_tnode = $tnode->src_tnode;
     return if (!$src_tnode);
 
+    $self->_process_personal($tnode, $src_tnode);
+    $self->_process_relative($tnode, $src_tnode);
+
+}
+
+sub _process_personal {
+    my ($self, $tnode, $src_tnode) = @_;
+    
     # English personal and possessive pronouns
     if (Treex::Tool::Coreference::NodeFilter::PersPron::is_3rd_pers($src_tnode, {expressed => 1, reflexive => -1})) {
         my $src_anode = $src_tnode->get_lex_anode;
@@ -35,9 +44,60 @@ sub process_tnode {
             }
         }
     }
-
 }
 
+sub _process_relative {
+    my ($self, $tnode, $src_tnode) = @_;
+
+    # English relative pronouns
+    if (Treex::Tool::Coreference::NodeFilter::RelPron::is_relat($src_tnode)) {
+        # if referring to a person
+        if ($src_tnode->t_lemma eq "who") {
+            # is bound in a prepositional phrase
+            if ($tnode->formeme =~ /\+X$/) {
+                $tnode->set_t_lemma("wie");
+            }
+            else {
+                $tnode->set_t_lemma("die");
+            }
+        }
+        #elsif ($src_tnode->t_lemma eq "whose") {
+        #    $tnode->set_t_lemma("wie");
+        #    $tnode->set_formeme("n:van+X");
+        #}
+        # referrring to an inanimate thing or an event
+        else {
+            my ($ante) = $tnode->get_coref_text_nodes();
+            if (defined $ante) {
+                # the antecedent is a noun phrase
+                if ($ante->formeme =~ /^n/) {
+                    # is bound in a prepositional phrase
+                    if ($tnode->formeme =~ /\+X$/) {
+                        $tnode->set_t_lemma("waar");
+                    }
+                    else {
+                        # het-noun in singular
+                        if (defined $ante->gram_gender && $ante->gram_gender eq "neut" && defined $ante->gram_number && $ante->gram_number eq "sg") {
+                            $tnode->set_t_lemma("dat");
+                        }
+                        # others de-nouns
+                        else {
+                            $tnode->set_t_lemma("die");
+                        }
+                    }
+
+                }
+                # the antecedent is a verb phrase
+                else {
+                    $tnode->set_t_lemma("wat");
+                }
+            }
+            else {
+                $tnode->set_t_lemma("wat");
+            }
+        }
+    }
+}
 
 1;
 
