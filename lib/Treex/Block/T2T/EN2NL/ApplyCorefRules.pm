@@ -67,7 +67,7 @@ sub _process_relative {
         #}
         # referrring to an inanimate thing or an event
         else {
-            my ($ante) = $tnode->get_coref_text_nodes();
+            my ($ante) = $tnode->get_coref_nodes();
             if (defined $ante) {
                 # the antecedent is a noun phrase
                 if ($ante->formeme =~ /^n/) {
