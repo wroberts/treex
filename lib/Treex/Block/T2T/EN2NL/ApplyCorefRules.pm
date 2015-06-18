@@ -66,7 +66,7 @@ sub _process_relative {
         #    $tnode->set_formeme("n:van+X");
         #}
         # referrring to an inanimate thing or an event
-        else {
+        elsif ($src_tnode->t_lemma eq "which" || $src_tnode->t_lemma eq "that" || $src_tnode->t_lemma eq "what") {
             my ($ante) = $tnode->get_coref_nodes();
             if (defined $ante) {
                 # the antecedent is a noun phrase
