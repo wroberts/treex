@@ -18,14 +18,14 @@ cache:
 
 before_install:
     - mkdir -p $HOME/cachedlibs
-    - export PERL5LIB=$PWD/lib;$HOME/cachedlibs; export PATH=$PWD/bin:$PATH;
+    - export PERL5LIB=$PWD/lib:$HOME/cachedlibs/lib/perl5/x86_64-linux:$HOME/cachedlibs/lib/perl5/
+    - export PATH=$PWD/bin:$PATH;
     - CC=clang++ cpanm -v -l $HOME/cachedlibs Ufal::MorphoDiTa
-    - find $HOME/cachedlibs
-#    - sudo apt-get libxml2-dev zlib1g-dev
-#    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-#    - sudo apt-get update -qq
-#    - sudo apt-get install -qq gcc-4.8 g++-4.8
-#    - CC=g++-4.8 cpanm -v Ufal::MorphoDiTa
+    - sudo apt-get libxml2-dev zlib1g-dev
+    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq gcc-4.8 g++-4.8
+    - CC=g++-4.8 cpanm -v -l $HOME/cachedlibs Ufal::NameTag
 
 install:
     - cpanm --installdeps --notest Treex::Core
@@ -37,7 +37,8 @@ install:
 script:
     - prove -r lib/Treex/Core
     - lib/Treex/Tool/Tagger/t/morphodita.t
-    
+    - lib/Treex/Tool/NER/t/nametag_en.t
+
 #after_success:
 #    - clang++ -v
 #    - CC=clang++ cpanm -v Ufal::NameTag
