@@ -14,18 +14,22 @@ perl:
 cache:
   directories:
   - $HOME/.treex
-  - $HOME/cachedlibs
+  - $HOME/cache/$TRAVIS_PERL_VERSION
 
 before_install:
-    - mkdir -p $HOME/cachedlibs
-    - export PERL5LIB=$PWD/lib:$HOME/cachedlibs/lib/perl5/x86_64-linux:$HOME/cachedlibs/lib/perl5/
-    - export PATH=$PWD/bin:$PATH;
-    - CC=clang++ cpanm -v -l $HOME/cachedlibs Ufal::MorphoDiTa
-    - sudo apt-get libxml2-dev zlib1g-dev
-    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq gcc-4.8 g++-4.8
-    - CC=g++-4.8 cpanm -v -l $HOME/cachedlibs Ufal::NameTag
+    - export $CACHELIB=$HOME/cache/$TRAVIS_PERL_VERSION
+    - export PERL5LIB=$PWD/lib:$CACHELIB/lib/perl5/x86_64-linux:$CACHELIB/lib/perl5/
+    - export PATH=$PWD/bin:$PATH
+    - mkdir -p $CACHELIB
+    - |
+      if [ ! -f $CACHELIB/lib/perl5/x86_64-linux/Ufal/MorphoDiTa.pm ] || [ ! -f $CACHELIB/lib/perl5/x86_64-linux/Ufal/NameTag.pm ]; then
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get update -qq
+        sudo apt-get install -qq g++-4.8  
+        CC=clang++ cpanm -v -l $CACHELIB Ufal::MorphoDiTa Ufal::NameTag
+      fi
+    #- CC=g++-4.8 cpanm -v -l $CACHELIB Ufal::NameTag
+    
 
 install:
     - cpanm --installdeps --notest Treex::Core
