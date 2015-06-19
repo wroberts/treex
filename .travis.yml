@@ -1,11 +1,19 @@
 language: "perl"
 perl:
     - "5.20"
-    - "5.18"
-    - "5.16"
-    - "5.14"
-    - "5.12"
-    - "5.10"
+#    - "5.18"
+#    - "5.16"
+#    - "5.14"
+#    - "5.12"
+#    - "5.10"
+
+# Download the Treex "share" from Travis cache (stored at Amazon S3)
+# instead of from http://ufallab.ms.mff.cuni.cz/tectomt/share
+# This should be faster, but we can also catch errors
+# when someone modifies a files in Treex share
+cache:
+  directories:
+  - $HOME/.treex
 
 #before_install:
 #    - sudo apt-get libxml2-dev zlib1g-dev
@@ -19,16 +27,18 @@ install:
     - cpanm --installdeps --notest Treex::Core
     #- cpanm --notest URI::Find::Schemeless PerlIO::gzip Text::Iconv AI::MaxEntropy Cache::Memcached Email::Find XML::Twig String::Util String::Diff List::Pairwise MooseX::Role::AttributeOverride YAML::Tiny Graph Tree::Trie Text::Brew App::whichpm
     #- cpanm Lingua::Interset
-    - CC=clang cpanm -v Ufal::MorphoDiTa
+    #- CC=clang cpanm -v Ufal::MorphoDiTa
     #- CC=g++-4.8 cpanm -v Ufal::NameTag
 
 script:
-    #- prove -r lib/Treex/Core
+    - prove -r lib/Treex/Core
+    - CC=clang++ cpanm -v Ufal::MorphoDiTa
     - lib/Treex/Tool/Tagger/t/morphodita.t
-    #- lib/Treex/Tool/NER/t/nametag_en.t
-    - clang++ -v
-    - CC=clang++ cpanm -v Ufal::NameTag
-    - clang -v
-    - CC=clang cpanm -v Ufal::NameTag
-
+    
 #after_success:
+#    - clang++ -v
+#    - CC=clang++ cpanm -v Ufal::NameTag
+#    - clang -v
+#    - CC=clang cpanm -v Ufal::NameTag
+#    - lib/Treex/Tool/NER/t/nametag_en.t
+
