@@ -17,7 +17,7 @@ cache:
   - $HOME/cache/$TRAVIS_PERL_VERSION
 
 before_install:
-    - export $CACHELIB=$HOME/cache/$TRAVIS_PERL_VERSION
+    - export CACHELIB=$HOME/cache/$TRAVIS_PERL_VERSION
     - export PERL5LIB=$PWD/lib:$CACHELIB/lib/perl5/x86_64-linux:$CACHELIB/lib/perl5/
     - export PATH=$PWD/bin:$PATH
     - mkdir -p $CACHELIB
