@@ -16,16 +16,19 @@ perl:
 
 install:
     - export PERL5LIB=`pwd`/lib; export PATH=`pwd`/bin:$PATH;
-    - cpanm --installdeps --notest Treex::Core
-    - cpanm --notest URI::Find::Schemeless PerlIO::gzip Text::Iconv AI::MaxEntropy Cache::Memcached Email::Find XML::Twig String::Util String::Diff List::Pairwise MooseX::Role::AttributeOverride YAML::Tiny Graph Tree::Trie Text::Brew App::whichpm
-    - cpanm Lingua::Interset
-    - clang -v; clang-3.5 -v; clang++ -v; clang++-3.5 -v;
-    - CC=clang-3.5 cpanm -v Ufal::NameTag
+    #- cpanm --installdeps --notest Treex::Core
+    #- cpanm --notest URI::Find::Schemeless PerlIO::gzip Text::Iconv AI::MaxEntropy Cache::Memcached Email::Find XML::Twig String::Util String::Diff List::Pairwise MooseX::Role::AttributeOverride YAML::Tiny Graph Tree::Trie Text::Brew App::whichpm
+    #- cpanm Lingua::Interset
+    - clang -v
+    - clang-3.4 -v
+    - clang++ -v
+    - clang++-3.4 -v
+    - CC=clang-3.4 cpanm -v Ufal::NameTag
     #- CC=clang cpanm Ufal::MorphoDiTa Ufal::NameTag
     #- CC=g++-4.8 cpanm -v Ufal::NameTag
 
 script:
-    - prove -r lib/Treex/Core
+    #- prove -r lib/Treex/Core
     #- lib/Treex/Tool/Tagger/t/morphodita.t
     - lib/Treex/Tool/NER/t/nametag_en.t
 
