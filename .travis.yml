@@ -25,8 +25,6 @@ script:
     #- prove -r lib/Treex/Core
     #- lib/Treex/Tool/Tagger/t/morphodita.t
     #- lib/Treex/Tool/NER/t/nametag_en.t
-
-after_success:
     - clang -v
     - CC=clang cpanm Ufal::MorphoDiTa
     - lib/Treex/Tool/Tagger/t/morphodita.t
@@ -34,3 +32,4 @@ after_success:
     - CC=clang++ cpanm -v Ufal::NameTag
     - CC=clang cpanm -v Ufal::NameTag
 
+#after_success:
