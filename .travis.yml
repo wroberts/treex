@@ -21,6 +21,12 @@ before_install:
     - export PERL5LIB=$PWD/lib:$CACHELIB/lib/perl5/x86_64-linux:$CACHELIB/lib/perl5/
     - export PATH=$PWD/bin:$PATH
     - mkdir -p $CACHELIB
+    # MorphoDiTa and NameTag need a C++11 compiler, which is not available at Travis by default.
+    # clang needs libstdc++ from g++, so we need to install g++-4.8
+    # no matter if we want to compile with clang or g++.
+    # Installing g++-4.8, MorphoDiTa and NameTag takes 110s,
+    # so we'll install it into Travis cache, so it does not need to be repeated
+    # (unless the cache was deleted).
     - |
       if [ ! -f $CACHELIB/lib/perl5/x86_64-linux/Ufal/MorphoDiTa.pm ] || [ ! -f $CACHELIB/lib/perl5/x86_64-linux/Ufal/NameTag.pm ]; then
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -28,11 +34,10 @@ before_install:
         sudo apt-get install -qq g++-4.8  
         CC=clang++ cpanm -v -l $CACHELIB Ufal::MorphoDiTa Ufal::NameTag
       fi
-    #- CC=g++-4.8 cpanm -v -l $CACHELIB Ufal::NameTag
-    
+    - cpanm --installdeps --notest -l $CACHELIB Treex::Core
+  
 
 install:
-    - cpanm --installdeps --notest Treex::Core
     - cpanm --notest URI::Find::Schemeless PerlIO::gzip Text::Iconv AI::MaxEntropy Cache::Memcached Email::Find XML::Twig String::Util String::Diff List::Pairwise MooseX::Role::AttributeOverride YAML::Tiny Graph Tree::Trie Text::Brew App::whichpm
     - cpanm Lingua::Interset
     #- CC=clang cpanm -v Ufal::MorphoDiTa
