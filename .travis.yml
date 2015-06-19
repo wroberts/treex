@@ -16,20 +16,19 @@ perl:
 
 install:
     - export PERL5LIB=`pwd`/lib; export PATH=`pwd`/bin:$PATH;
-    #- cpanm --installdeps --notest Treex::Core
+    - cpanm --installdeps --notest Treex::Core
     #- cpanm --notest URI::Find::Schemeless PerlIO::gzip Text::Iconv AI::MaxEntropy Cache::Memcached Email::Find XML::Twig String::Util String::Diff List::Pairwise MooseX::Role::AttributeOverride YAML::Tiny Graph Tree::Trie Text::Brew App::whichpm
     #- cpanm Lingua::Interset
+    - CC=clang cpanm -v Ufal::MorphoDiTa
     #- CC=g++-4.8 cpanm -v Ufal::NameTag
 
 script:
     #- prove -r lib/Treex/Core
-    #- lib/Treex/Tool/Tagger/t/morphodita.t
-    #- lib/Treex/Tool/NER/t/nametag_en.t
-    - clang -v
-    - CC=clang cpanm Ufal::MorphoDiTa
     - lib/Treex/Tool/Tagger/t/morphodita.t
+    #- lib/Treex/Tool/NER/t/nametag_en.t
     - clang++ -v
     - CC=clang++ cpanm -v Ufal::NameTag
+    - clang -v
     - CC=clang cpanm -v Ufal::NameTag
 
 #after_success:
