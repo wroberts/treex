@@ -1,6 +1,5 @@
 language: "perl"
 perl:
-    - "5.22"
     - "5.20"
 #  - "5.18"
 #  - "5.16"
@@ -20,7 +19,8 @@ install:
     - cpanm --installdeps --notest Treex::Core
     - cpanm --notest URI::Find::Schemeless PerlIO::gzip Text::Iconv AI::MaxEntropy Cache::Memcached Email::Find XML::Twig String::Util String::Diff List::Pairwise MooseX::Role::AttributeOverride YAML::Tiny Graph Tree::Trie Text::Brew App::whichpm
     - cpanm Lingua::Interset
-    - CC=clang++ cpanm -v Ufal::NameTag
+    - clang -v; clang-3.5 -v; clang++ -v; clang++-3.5 -v;
+    - CC=clang-3.5 cpanm -v Ufal::NameTag
     #- CC=clang cpanm Ufal::MorphoDiTa Ufal::NameTag
     #- CC=g++-4.8 cpanm -v Ufal::NameTag
 
