@@ -21,6 +21,8 @@ my %M_DEGREE_FOR = (
     'sup'  => '3',
 );
 
+has 'disable_svuj' => (is => 'ro', isa => 'Bool', default => 0);
+
 sub process_tnode {
     my ( $self, $t_node ) = @_;
     my $a_node = $t_node->get_lex_anode() or return;
@@ -67,7 +69,7 @@ sub process_tnode {
     # also possnumber and possender should be handled.
     if ( $t_node->t_lemma eq '#PersPron' ) {
         $a_node->set_attr( 'morphcat/pos', 'P' );
-        my $subpos = get_subpos_of_perspron( $a_node, $t_node, $person );
+        my $subpos = $self->get_subpos_of_perspron( $a_node, $t_node, $person );
         $a_node->set_attr( 'morphcat/subpos', $subpos );
     }
 
@@ -125,7 +127,7 @@ sub process_tnode {
 # Returns second position of tag for personal pronouns.
 # Also possnumber and possgender is filled if needed.
 sub get_subpos_of_perspron {
-    my ( $a_node, $t_node, $person ) = @_;
+    my ( $self, $a_node, $t_node, $person ) = @_;
     my $formeme = $t_node->formeme;
 
     if ( $formeme =~ /(poss|attr)/ ) {
@@ -135,11 +137,13 @@ sub get_subpos_of_perspron {
         # execept for nominative ("Mají štěstí jako *sví rodiče." hidden clause?).
         # TODO: check whether it is really a coreference from possesive to the subject
         #       (we don't mark any other type yet, so it is ok).
-        my ($noun) = $t_node->get_eparents();
-        if ( $t_node->get_coref_gram_nodes() && $noun && $noun->formeme !~ /1/ ) {
-            ## reflexive lemma "svůj" doesn't have person in the tag
-            $a_node->set_attr( 'morphcat/person', '.' );
-            return '8';
+        if (!$self->disable_svuj) {
+            my ($noun) = $t_node->get_eparents();
+            if ( $t_node->get_coref_gram_nodes() && $noun && $noun->formeme !~ /1/ ) {
+                ## reflexive lemma "svůj" doesn't have person in the tag
+                $a_node->set_attr( 'morphcat/person', '.' );
+                return '8';
+            }
         }
 
         # Possesive pronouns (except svůj) should have filled possnumber and possgender
