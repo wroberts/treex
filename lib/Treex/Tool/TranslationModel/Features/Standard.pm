@@ -114,6 +114,14 @@ sub features_from_src_tnode {
             $features{determiner} = 'a';
         }
     }
+
+    # WSD features (2015-06-29, luis.gomes@di.fc.ul.pt)
+    my $anode = $node->get_lex_anode();
+    if (defined $anode and defined $anode->wild->{wsd}
+        and $anode->wild->{wsd} ne "UNK") {
+        $features{synsetid} = $anode->wild->{wsd};
+    }
+
     if ( $arg_ref && $arg_ref->{encode} ) {
         encode_features_for_tsv( \%features );
     }
