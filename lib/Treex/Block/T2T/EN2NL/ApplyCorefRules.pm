@@ -76,14 +76,20 @@ sub _process_relative {
                         $tnode->set_t_lemma("waar");
                     }
                     else {
-                        # het-noun in singular
-                        if (defined $ante->gram_gender && $ante->gram_gender eq "neut" && defined $ante->gram_number && $ante->gram_number eq "sg") {
-                            $tnode->set_t_lemma("dat");
+                        # on the list of Dutch nouns
+                        if (defined $ante->gram_gender) {
+                            # het-noun in singular
+                            if ($ante->gram_gender eq "neut" && defined $ante->gram_number && $ante->gram_number eq "sg") {
+                                $tnode->set_t_lemma("dat");
+                            }
+                            # others de-nouns
+                            else {
+                                $tnode->set_t_lemma("die");
+                            }
                         }
-                        # others de-nouns
-                        else {
-                            $tnode->set_t_lemma("die");
-                        }
+                        #else {
+                        #    $tnode->set_t_lemma("dat");
+                        #}
                     }
 
                 }
