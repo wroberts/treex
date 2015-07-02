@@ -15,7 +15,7 @@ sub process_ttree {
         )
     {
 
-        my ($t_antec) = $t_relpron->get_coref_gram_nodes;
+        my ($t_antec) = $t_relpron->get_coref_nodes;
         next if !defined $t_antec;
 
         my $a_antec = $t_antec->get_lex_anode or next;
