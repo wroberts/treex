@@ -139,7 +139,16 @@ sub get_subpos_of_perspron {
         #       (we don't mark any other type yet, so it is ok).
         if (!$self->disable_svuj) {
             my ($noun) = $t_node->get_eparents();
-            if ( $t_node->get_coref_gram_nodes() && $noun && $noun->formeme !~ /1/ ) {
+            my $possessed_not_nominative = ($noun && $noun->formeme !~ /1/);
+            my $possessor_clauses_subj = 0;
+            my ($ante) = $t_node->get_coref_nodes();
+            if ($ante) {
+                my $ante_clause_root = $ante->get_clause_root();
+                my $tnode_clause_root = $t_node->get_clause_root();
+                my $same_clause = ($ante_clause_root == $tnode_clause_root);
+                $possessor_clauses_subj = ($same_clause && $ante->formeme =~ /^(n:1|n:subj|drop)$/);
+            }
+            if ( $possessed_not_nominative && $possessor_clauses_subj ) {
                 ## reflexive lemma "svůj" doesn't have person in the tag
                 $a_node->set_attr( 'morphcat/person', '.' );
                 return '8';
