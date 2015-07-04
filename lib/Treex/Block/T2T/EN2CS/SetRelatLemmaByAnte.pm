@@ -10,6 +10,7 @@ sub process_tnode {
     return if !defined $i or $i ne 'relat';
 
     my $en_tnode = $tnode->src_tnode;
+    return if (!defined $en_tnode);
     # only 'whihc' can be translated to 'což'
     return if ($en_tnode->t_lemma ne 'which');
     # only if it is not bound in a prepositional phrase
