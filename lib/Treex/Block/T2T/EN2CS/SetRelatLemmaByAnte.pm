@@ -9,6 +9,12 @@ sub process_tnode {
     my $i = $tnode->gram_indeftype;
     return if !defined $i or $i ne 'relat';
 
+    my $en_tnode = $tnode->src_tnode;
+    # only 'whihc' can be translated to 'což'
+    return if ($en_tnode->t_lemma ne 'which');
+    # only if it is not bound in a prepositional phrase
+    return if ($en_tnode->formeme =~ /\+X$/);
+
     my ($ante) = $tnode->get_coref_nodes;
     if (defined $ante && $ante->formeme =~ /^v/) {
         $tnode->set_t_lemma("což");
