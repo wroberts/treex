@@ -12,7 +12,8 @@ override 'is_relative_word' => sub {
 override 'is_allowed_antecedent' => sub {
     my ( $self, $t_antec ) = @_;
     my $a_antec = $t_antec->get_lex_anode();
-    return ( $a_antec and $a_antec->tag =~ /^(NN|PR|DT)/ );
+    return (defined $a_antec ? 1 : 0);
+    #return ( $a_antec and $a_antec->tag =~ /^(NN|PR|DT)/ );
 };
 
 1;
