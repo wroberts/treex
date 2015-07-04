@@ -11,8 +11,7 @@ sub process_tnode {
 
     my ($ante) = $tnode->get_coref_nodes;
     if (defined $ante && $ante->formeme =~ /^v/) {
-            $tnode->set_t_lemma("což");
-        }
+        $tnode->set_t_lemma("což");
     }
 }
 
