@@ -30,7 +30,7 @@ sub process_ttree {
 
         if ( my $antec = $candidates[0] ) {
 
-            #	    print "YES: ".$antec->t_lemma."\n";
+#            print STDERR "[FindTextCoref]: ".$perspron->get_address."\n";
             $perspron->set_deref_attr( 'coref_text.rf', [$antec] );
 
         }

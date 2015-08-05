@@ -27,6 +27,7 @@ sub process_tnode {
     return if !$subject;
     if (all {$self->agree_in($_, $perspron, $subject)} qw(gender number person)){
         $perspron->add_coref_gram_nodes($subject);
+#        print STDERR "[FindGramCorefForReflPron]: ".$perspron->src_tnode->get_address."\n";
     }
  
     return;
