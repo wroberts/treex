@@ -48,6 +48,8 @@ T2T::EN2CS::MoveEnoughBeforeAdj
 T2T::EN2CS::MoveJesteBeforeVerb
 T2T::EN2CS::FixMoney
 T2T::EN2CS::NeutPersPronGenderFromAntec
+T2T::EN2CS::SetRelatLemmaByAnte
+
 T2T::EN2CS::ValencyRelatedRules
 T2T::SetClauseNumber
 T2T::EN2CS::TurnTextCorefToGramCoref

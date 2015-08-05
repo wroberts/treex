@@ -64,7 +64,9 @@ A2T::EN::MarkClauseHeads
 A2T::EN::SetFunctors
 A2T::EN::MarkInfin
 A2T::EN::MarkRelClauseHeads
+
 A2T::EN::MarkRelClauseCoref
+
 A2T::EN::MarkDspRoot
 A2T::MarkParentheses
 A2T::SetNodetype
@@ -81,7 +83,11 @@ A2T::EN::AddCorAct
 T2T::SetClauseNumber
 A2T::EN::FixRelClauseNoRelPron
 A2T::EN::MarkReferentialIt resolver_type=nada threshold=0.5 suffix=nada_0.5 # you need Treex::External::NADA installed for this
-A2T::EN::FindTextCoref
+
+#A2T::EN::FindTextCoref
+#A2T::EN::FindGramCorefForReflPron
+#Coref::EN::ResolveStanfordCoreNLP
+Coref::EN::ResolveBART2
 
 END
 
