@@ -32,7 +32,8 @@ sub is_relative_word {
 sub is_allowed_antecedent {
     my ( $self, $t_antec ) = @_;
     my $a_antec = $t_antec->get_lex_anode();
-    return ( $a_antec and ( $a_antec->is_noun or $a_antec->match_iset( 'synpos' => 'subst' ) ) );
+    return $a_antec ? 1 : 0;
+    #return ( $a_antec and ( $a_antec->is_noun or $a_antec->match_iset( 'synpos' => 'subst' ) ) );
 }
 
 1;

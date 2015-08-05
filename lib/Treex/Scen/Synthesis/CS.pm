@@ -6,11 +6,16 @@ my $FULL = <<'END';
 T2A::CS::CopyTtree
 T2A::CS::DistinguishHomonymousMlemmas
 T2A::CS::ReverseNumberNounDependency
+
 T2A::CS::InitMorphcat
+#T2A::CS::InitMorphcat disable_svuj=1
+
 T2A::CS::FixPossessiveAdjs
 T2A::CS::MarkSubject
 T2A::CS::ImposePronZAgr
+
 T2A::CS::ImposeRelPronAgr
+
 T2A::CS::ImposeSubjpredAgr
 T2A::CS::ImposeAttrAgr
 T2A::CS::ImposeComplAgr
