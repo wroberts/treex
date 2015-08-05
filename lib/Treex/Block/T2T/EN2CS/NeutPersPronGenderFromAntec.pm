@@ -6,6 +6,8 @@ extends 'Treex::Core::Block';
 sub process_tnode {
     my ( $self, $tnode ) = @_;
 
+    return if ($tnode->t_lemma ne "#PersPron");
+
     my ($t_antec) = $tnode->get_coref_text_nodes();
     if ( ( $tnode->gram_gender || "" ) eq 'neut' && defined $t_antec ) {
         my $gender_antec = $t_antec->gram_gender;
