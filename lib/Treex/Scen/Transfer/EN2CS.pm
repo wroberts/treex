@@ -47,7 +47,6 @@ T2T::EN2CS::MovePersPronNextToVerb
 T2T::EN2CS::MoveEnoughBeforeAdj
 T2T::EN2CS::MoveJesteBeforeVerb
 T2T::EN2CS::FixMoney
-T2T::EN2CS::FindGramCorefForReflPron
 T2T::EN2CS::NeutPersPronGenderFromAntec
 T2T::EN2CS::ValencyRelatedRules
 T2T::SetClauseNumber
