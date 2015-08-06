@@ -121,7 +121,6 @@ sub get_scenario_string {
     'T2T::EN2CS::MoveJesteBeforeVerb',
     'T2T::EN2CS::MoveNounAttrAfterNouns',
     'T2T::EN2CS::FixMoney',
-    'T2T::EN2CS::FindGramCorefForReflPron',
     
     $self->coref =~ /\+/ ? 'T2T::EN2CS::NeutPersPronGenderFromAntec' : (),
     $self->coref =~ /relat/ ? 'T2T::EN2CS::SetRelatLemmaByAnte' : (),
