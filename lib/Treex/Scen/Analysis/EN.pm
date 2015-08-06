@@ -37,6 +37,13 @@ has gazetteer => (
      documentation => 'Use W2A::EN::GazeteerMatch A2T::ProjectGazeteerInfo, default=0',
 );
 
+has coref => (
+     is => 'ro',
+     isa => enum( [qw(0 treex-relat treex-relat+other stanford+treex-relat bart+treex-relat)] ),
+     default => 'treex-relat+other',
+     documentation => 'Use coreference-aware blocks and various types of coreference resolvers.',
+);
+
 # TODO Add parameter
 # has memory => (
 #     is => 'ro',
@@ -103,7 +110,7 @@ sub get_scenario_string {
     'A2T::EN::MarkInfin',
     'A2T::EN::MarkRelClauseHeads',
 
-    'A2T::EN::MarkRelClauseCoref',
+    $self->coref =~ /relat/ ? 'A2T::EN::MarkRelClauseCoref' : (),
 
     'A2T::EN::MarkDspRoot',
     'A2T::MarkParentheses',
@@ -126,10 +133,10 @@ sub get_scenario_string {
     'A2T::EN::FixRelClauseNoRelPron',
     'A2T::EN::MarkReferentialIt resolver_type=nada threshold=0.5 suffix=nada_0.5', # you need Treex::External::NADA installed for this
     
-    #'A2T::EN::FindTextCoref',
-    #'A2T::EN::FindGramCorefForReflPron',
-    #'Coref::EN::ResolveStanfordCoreNLP',
-    'Coref::EN::ResolveBART2',
+    $self->coref eq 'treex-relat+other' ? 'A2T::EN::FindTextCoref' : (),
+    $self->coref eq 'treex-relat+other' ? 'A2T::EN::FindGramCorefForReflPron' : (),
+    $self->coref eq 'stanford+treex-relat' ? 'Coref::EN::ResolveStanfordCoreNLP' : (),
+    $self->coref eq 'bart+treex-relat' ? 'Coref::EN::ResolveBART2' : (),
     ;
 
     return $scen;

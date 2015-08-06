@@ -38,6 +38,13 @@ has fl_agreement => (
      documentation => 'Use T2T::FormemeTLemmaAgreement with a specified function as parameter',
 );
 
+has coref => (
+     is => 'ro',
+     isa => enum( [qw(0 treex-relat treex-relat+other stanford+treex-relat bart+treex-relat)] ),
+     default => '0',
+     documentation => 'Use coreference-aware blocks and various types of coreference resolvers.',
+);
+
 sub BUILD {
     my ($self) = @_;
     if ($self->tm_adaptation eq 'auto'){
@@ -83,6 +90,7 @@ sub get_scenario_string {
     'T2T::EN2NL::TrLFPhrases',
     'T2T::EN2NL::FixCompounds',
     'T2T::EN2NL::AddNounGender',
+    $self->coref ne '0' ? 'T2T::EN2NL::ApplyCorefRules' : (),
     ;
 
     return $scen;
