@@ -91,6 +91,7 @@ sub get_scenario_string {
     'T2T::EN2NL::FixCompounds',
     'T2T::EN2NL::AddNounGender',
     $self->coref ne '0' ? 'T2T::EN2NL::ApplyCorefRules' : (),
+    'T2T::EN2NL::TrLFFixTMErrors',
     ;
 
     return $scen;
