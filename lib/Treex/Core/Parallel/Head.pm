@@ -316,7 +316,7 @@ sub _run_job_script {
             my ($h_vmem, $unit) = ($mem =~ /(\d+)(.*)/);
             $h_vmem = (2*$h_vmem) . $unit;
             #$qsub_opts .= " -l mem_free=$mem -l h_vmem=$h_vmem -l act_mem_free=$mem"; # UPV/EHU
-            $qsub_opts .= " -hard -l mem_free=$mem -l h_vmem=$h_vmem -l act_mem_free=$mem";
+            $qsub_opts .= " -hard -l mem_free=$mem -l h_vmem=$h_vmem";
         }
         if ($self->qsub){
             $qsub_opts .= ' ' . $self->qsub;
