@@ -9,6 +9,13 @@ has domain => (
      documentation => 'domain of the input texts',
 );
 
+has tm_adaptation => (
+     is => 'ro',
+     isa => enum( [qw(auto no 0 interpol)] ),
+     default => 'auto',
+     documentation => 'domain adaptation of Translation Models to IT domain',
+);
+
 has hmtm => (
      is => 'ro',
      isa => 'Bool',
@@ -18,16 +25,29 @@ has hmtm => (
 
 has gazetteer => (
      is => 'ro',
-     isa => 'Bool',
-     default => undef,
-     documentation => 'T2T::ES2EN::TrGazeteerItems',
+     isa => 'Str',
+     default => '0',
+     documentation => 'Use T2T::TrGazeteerItems, default=0',
 );
 
+has fl_agreement => (
+     is => 'ro',
+     isa => enum( [qw(0 AM-P GM-P HM-P GM-Log-P HM-Log-P)] ),
+     default => '0',
+     documentation => 'Use T2T::FormemeTLemmaAgreement with a specified function as parameter',
+);
+
+# TODO gazetteers should work without any dependance on source language here
+has src_lang => (
+    is => 'ro',
+    isa => 'Str',
+    documentation => 'Gazetteers are defined for language pairs. Both source and target languages must be specified.',
+);
 
 sub BUILD {
     my ($self) = @_;
-    if (!defined $self->gazetteer){
-        $self->{gazetteer} = $self->domain eq 'IT' ? 1 : 0;
+    if ($self->tm_adaptation eq 'auto'){
+        $self->{tm_adaptation} = $self->domain eq 'IT' ? 'interpol' : 'no';
     }
     return;
 }
@@ -37,13 +57,27 @@ sub get_scenario_string {
     my ($self) = @_;
     
     my $TM_DIR= 'data/models/translation/es2en';
+
+    my $IT_LEMMA_MODELS = '';
+    my $IT_FORMEME_MODELS = '';
+    if ($self->tm_adaptation eq 'interpol'){
+        $IT_LEMMA_MODELS = "static 0.5 IT/20150728_batch1q-tlemma.static.gz\n      maxent 1.0 IT/20150728_batch1q-tlemma.maxent.gz";
+        $IT_FORMEME_MODELS = "static 1.0 IT/20150728_batch1q-formeme.static.gz\n      maxent 0.5 IT/20150728_batch1q-formeme.maxent.gz";
+    }
     
     my $scen = join "\n",
     'Util::SetGlobal language=en selector=tst',
     'T2T::CopyTtree source_language=es source_selector=src',
-    #$self->gazetteer eq 'IT' ? 'T2T::ES2EN::TrGazeteerItems' : (),
-    "T2T::TrFAddVariants static_model=$TM_DIR/Pilot1_formeme.static.gz discr_model=$TM_DIR/Pilot1_formeme.maxent.gz",
-    "T2T::TrLAddVariants static_model=$TM_DIR/Pilot1_tlemma.static.gz discr_model=$TM_DIR/Pilot1_tlemma.maxent.gz",
+    $self->gazetteer ? 'T2T::TrGazeteerItems src_lang='.$self->src_lang : (),
+    "T2T::TrFAddVariantsInterpol model_dir=$TM_DIR models='
+      static 1.0 20150728_formeme.static.min_2.minpc_1.gz
+      maxent 0.5 Pilot1_formeme.maxent.gz
+      $IT_FORMEME_MODELS'",
+    "T2T::TrLAddVariantsInterpol model_dir=$TM_DIR models='
+      static 0.5 20150728_tlemma.static.min_2.minpc_1.gz
+      maxent 1.0 Pilot1_tlemma.maxent.gz
+      $IT_LEMMA_MODELS'",
+    $self->fl_agreement ? 'T2T::FormemeTLemmaAgreement fun='.$self->fl_agreement : (),
     'Util::DefinedAttr tnode=t_lemma,formeme message="after simple transfer"',
     'T2T::SetClauseNumber',
     ;
@@ -85,6 +119,7 @@ L<Treex::Scen::ES2EN> -- end-to-end translation scenario
 =head1 AUTHORS
 
 Gorka Labaka <gorka.labaka@ehu.eus>
+Michal Novák <mnovak@ufal.mff.cuni.cz>
 
 =head1 COPYRIGHT AND LICENSE
 

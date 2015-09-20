@@ -203,7 +203,6 @@ sub get_nodelist_hook {
         }
         my %hide;
         foreach my $node ( grep { $_->isa('Treex::Core::Node::A') } @nodes ) {
-            my $parent = $node->get_parent;
             if ( defined $node->clause_number and $root{$node} ne $node ) {
                 $hide{$node} = 1;
             }
@@ -598,9 +597,10 @@ sub anode_hint {
 
     # List all non-empty Interset features.
     if ( $node->does('Treex::Core::Node::Interset') ) {
-        my @iset = $node->get_iset_pairs_list();
-        for ( my $i = 0; $i <= $#iset; $i += 2 ) {
-            push @lines, "$iset[$i]: $iset[$i+1]";
+        my @ifeat = $node->iset()->get_nonempty_features();
+        foreach my $f ( @ifeat ) {
+            my $v = $node->iset()->get_joined($f);
+            push(@lines, "$f: $v");
         }
     }
 
@@ -869,6 +869,10 @@ sub node_click_hook {
 1;
 
 __END__
+
+=pod
+
+=encoding utf-8
 
 =for Pod::Coverage precompute_visualization
 

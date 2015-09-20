@@ -25,23 +25,27 @@ has hmtm => (
 
 has gazetteer => (
      is => 'ro',
-     isa => 'Bool',
-     default => undef,
-     documentation => 'Use W2A::EN::GazeteerMatch A2T::ProjectGazeteerInfo T2T::EN2CS::TrGazeteerItems',
+     isa => 'Str',
+     default => '0',
+     documentation => 'Use T2T::TrGazeteerItems, default=0',
 );
 
 has fl_agreement => (
      is => 'ro',
-     isa => 'Str', #enum( [qw(0 Log-HM-P AM-Log-P ...)] ),
+     isa => enum( [qw(0 AM-P GM-P HM-P GM-Log-P HM-Log-P)] ),
      default => '0',
-     documentation => 'Use T2T::FormemeTLemmaAgreement with a specified function as parameter (Log-HM-P, AM-Log-P,...)',
+     documentation => 'Use T2T::FormemeTLemmaAgreement with a specified function as parameter',
+);
+
+# TODO gazetteers should work without any dependance on source language here
+has src_lang => (
+    is => 'ro',
+    isa => 'Str',
+    documentation => 'Gazetteers are defined for language pairs. Both source and target languages must be specified.',
 );
 
 sub BUILD {
     my ($self) = @_;
-    if (!defined $self->gazetteer){
-        $self->{gazetteer} = $self->domain eq 'IT' ? 1 : 0;
-    }
     if ($self->tm_adaptation eq 'auto'){
         $self->{tm_adaptation} = $self->domain eq 'IT' ? 'interpol' : 'no';
     }
@@ -63,6 +67,7 @@ sub get_scenario_string {
     my $scen = join "\n",
     'Util::SetGlobal language=en selector=tst',
     'T2T::CopyTtree source_language=nl source_selector=src',
+    $self->gazetteer ? 'T2T::TrGazeteerItems src_lang='.$self->src_lang : (),
     "T2T::TrFAddVariantsInterpol model_dir=$TM_DIR models='
       static 1.0 20150725_formeme.static.min_2.minpc_1.gz
       maxent 0.5 20150220_formeme.maxent.gz
