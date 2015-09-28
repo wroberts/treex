@@ -84,9 +84,8 @@ sub _insert_phrase_to_trie {
 }
 
 sub _match_phrases_in_atree {
-    my ($self, $atree, $trie) = @_;
+    my ($self, $all_anodes, $trie) = @_;
 
-    my @all_anodes = $atree->get_descendants({ordered=>1});
     #print "@all_anodes";
     #print join(' ', map {$_->form} @all_anodes) . "\n";
 
@@ -94,7 +93,7 @@ sub _match_phrases_in_atree {
     my @unproc_trie_nodes = ();
     my @unproc_anodes = ();
 
-    foreach my $anode (@all_anodes) {
+    foreach my $anode (@$all_anodes) {
         unshift @unproc_trie_nodes, $trie;
 
         my $word = $anode->form;
@@ -139,7 +138,7 @@ sub process_atree {
     #print "@all_anodes";
     print "atree nodes " . join(' ', map {$_->form} @all_anodes) . "\n";
 
-    my $matches = $self->_match_phrases_in_atree($atree, $self->_trie);
+    my $matches = $self->_match_phrases_in_atree(\@all_anodes, $self->_trie);
 
     # sort matches first on order, increasing
     my @sorted_matches = sort {$a->[2] <=> $b->[2]} @$matches;
