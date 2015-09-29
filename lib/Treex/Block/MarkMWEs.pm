@@ -32,15 +32,11 @@ sub _build_trie {
     open my $fh, "<", $path  or die "Could not open file $path!\n";
 
     my $trie = {};
-    my $number = 0;
-    while (my $mwe = <$fh>) {
-        #print $mwe . "\n";
-        chomp $mwe;
-        my $id = sprintf("mwe_%08d", $number);
-        $number += 1;
-        #print $id . "\n";
-        #print "$number $mwe\n";
-        _insert_phrase_to_trie($trie, $mwe, $id);
+    while (my $line = <$fh>) {
+        chomp $line;
+        #print $line . "\n";
+        my ($compo, $mwe) = split /\t/, $line;
+        _insert_phrase_to_trie($trie, $mwe, $compo);
     }
     close $fh;
     return $trie;
@@ -142,8 +138,8 @@ sub process_atree {
 
     # sort matches first on order, increasing
     my @sorted_matches = sort {$a->[2] <=> $b->[2]} @$matches;
-    # sort matches again on length, decreasing
-    @sorted_matches = sort {$b->[3] <=> $a->[3]} @sorted_matches;
+    # sort matches again on compositionality, increasing
+    @sorted_matches = sort {$a->[0] <=> $b->[0]} @sorted_matches;
 
     # create a hash to keep track of which a-nodes in this sentence
     # have been "marked" as belonging to a MWE
