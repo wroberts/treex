@@ -132,7 +132,7 @@ sub process_atree {
 
     my @all_anodes = $atree->get_descendants({ordered=>1});
     #print "@all_anodes";
-    print "atree nodes " . join(' ', map {$_->form} @all_anodes) . "\n";
+    # print "atree nodes " . join(' ', map {$_->form} @all_anodes) . "\n";
 
     my $matches = $self->_match_phrases_in_atree(\@all_anodes, $self->_trie);
 
@@ -145,17 +145,17 @@ sub process_atree {
     my %marked_anode_ords = ();
 
     foreach my $match (@sorted_matches) {
-        print "MATCH\n";
+        # print "MATCH\n";
         # retrieve the anodes matching the MWE candidate
         my @anodes = @{$match->[4]};
-        print "anodes: " . join(' ', map {$_->form} @anodes) . "\n";
+        #print "anodes: " . join(' ', map {$_->form} @anodes) . "\n";
         #print "left ord(): " . $match->[2] . "\n";
         #print "MWE length: " . $match->[3] . "\n";
         # retrieve the indices (ord() values) of the anodes which make up this MWE candidate
         my @anode_idxs = ($match->[2] .. $match->[2] + $match->[3] - 1);
         # check if these overlap with
         if (any {$marked_anode_ords{$_}} @anode_idxs){
-            print "MWE candidate overlaps with something already picked, skipping\n";
+            #print "MWE candidate overlaps with something already picked, skipping\n";
             next;
         }
         # find the t-nodes which map onto those a-nodes
@@ -164,19 +164,21 @@ sub process_atree {
         #print "tnodes: " . join(' ', map {$_->t_lemma} @tnodes) . "\n";
         # we can only collapse things if there are multiple t-nodes
         if (scalar(@tnodes) <= 1) {
-            print "too few nodes for processing\n";
+            # print "too few nodes for processing\n";
             next;
         }
         # determine if the t-nodes we have found are in a single treelet
         #my ($head, $added_nodes_rf) = find_connected_treelet(@tnodes);
         my $head = check_is_connected_treelet(@tnodes);
         if (!$head){
-            print "could not find connected treelet\n";
+            # print "could not find connected treelet\n";
             next;
         }
-        print "found $head\n";
+        # print "found $head\n";
         # we've found a MWE candidate; mark its anodes as belonging to a MWE candidate
         foreach (@anode_idxs) {$marked_anode_ords{$_} = 1;}
+
+        print "UBERMWE: \"" . $match->[1] . "\"";
 
         $self->reconnect_descendants($head, @tnodes);
 
@@ -228,7 +230,7 @@ sub reconnect_descendant{
     #print $desc . "\n";
     #print $head . "\n";
     #print $head->t_lemma . "\n";
-    print "reconnect " . $desc->t_lemma . " to " . $head->t_lemma . "\n";
+    # print "reconnect " . $desc->t_lemma . " to " . $head->t_lemma . "\n";
     $desc->set_parent($head);
     # TODO: store treelet configuration
 }
@@ -237,7 +239,7 @@ sub collapse_composite_node{
     my ($self, $head, @nodes) = @_;
     foreach my $node (@nodes) {
         next if ($node == $head);
-        print "delete " . $node->t_lemma . "\n";
+        # print "delete " . $node->t_lemma . "\n";
         $node->remove({children=>q(remove)});
         # TODO: store treelet configuration
     }
