@@ -181,7 +181,7 @@ sub process_atree {
         # we've found a MWE candidate; mark its anodes as belonging to a MWE candidate
         foreach (@anode_idxs) {$marked_anode_ords{$_} = 1;}
 
-        print "UBERMWE: \"" . $match->[1] . "\"";
+        log_info "UBERMWE: \"" . $match->[1] . "\"";
 
         $self->reconnect_descendants($head, @tnodes);
 
