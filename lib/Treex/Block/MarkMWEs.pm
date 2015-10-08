@@ -31,14 +31,17 @@ sub _build_trie {
     my $path = $self->phrase_list_path;#require_file_from_share($self->phrase_list_path);
     open my $fh, "<:gzip:utf8", $path  or die "Could not open file $path!\n";
 
+    my $linecount = 0;
     my $trie = {};
     while (my $line = <$fh>) {
         chomp $line;
         #print $line . "\n";
         my ($compo, $mwe) = split /\t/, $line;
         _insert_phrase_to_trie($trie, $mwe, $compo);
+        $linecount += 1;
     }
     close $fh;
+    log_info "Loaded $linecount MWEs into trie.";
     return $trie;
 }
 
