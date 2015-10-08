@@ -29,7 +29,7 @@ sub _build_trie {
     log_info "Building a trie for searching...";
 
     my $path = $self->phrase_list_path;#require_file_from_share($self->phrase_list_path);
-    open my $fh, "<", $path  or die "Could not open file $path!\n";
+    open my $fh, "<:gzip:utf8", $path  or die "Could not open file $path!\n";
 
     my $trie = {};
     while (my $line = <$fh>) {
