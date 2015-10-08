@@ -29,16 +29,19 @@ sub _build_trie {
     log_info "Building a trie for searching...";
 
     my $path = $self->phrase_list_path;#require_file_from_share($self->phrase_list_path);
-    open my $fh, "<", $path  or die "Could not open file $path!\n";
+    open my $fh, "<:gzip:utf8", $path  or die "Could not open file $path!\n";
 
+    my $linecount = 0;
     my $trie = {};
     while (my $line = <$fh>) {
         chomp $line;
         #print $line . "\n";
         my ($compo, $mwe) = split /\t/, $line;
         _insert_phrase_to_trie($trie, $mwe, $compo);
+        $linecount += 1;
     }
     close $fh;
+    log_info "Loaded $linecount MWEs into trie.";
     return $trie;
 }
 
@@ -132,31 +135,30 @@ sub process_atree {
 
     my @all_anodes = $atree->get_descendants({ordered=>1});
     #print "@all_anodes";
-    print "atree nodes " . join(' ', map {$_->form} @all_anodes) . "\n";
+    # print "atree nodes " . join(' ', map {$_->form} @all_anodes) . "\n";
 
     my $matches = $self->_match_phrases_in_atree(\@all_anodes, $self->_trie);
 
-    # sort matches first on order, increasing
-    my @sorted_matches = sort {$a->[2] <=> $b->[2]} @$matches;
-    # sort matches again on compositionality, increasing
-    @sorted_matches = sort {$a->[0] <=> $b->[0]} @sorted_matches;
+    # sort matches again on compositionality, increasing; resolve ties
+    # by sorting matches on order, increasing
+    my @sorted_matches = sort {$a->[0] <=> $b->[0] || $a->[2] <=> $b->[2]} @$matches;
 
     # create a hash to keep track of which a-nodes in this sentence
     # have been "marked" as belonging to a MWE
     my %marked_anode_ords = ();
 
     foreach my $match (@sorted_matches) {
-        print "MATCH\n";
+        # print "MATCH\n";
         # retrieve the anodes matching the MWE candidate
         my @anodes = @{$match->[4]};
-        print "anodes: " . join(' ', map {$_->form} @anodes) . "\n";
+        #print "anodes: " . join(' ', map {$_->form} @anodes) . "\n";
         #print "left ord(): " . $match->[2] . "\n";
         #print "MWE length: " . $match->[3] . "\n";
         # retrieve the indices (ord() values) of the anodes which make up this MWE candidate
         my @anode_idxs = ($match->[2] .. $match->[2] + $match->[3] - 1);
         # check if these overlap with
         if (any {$marked_anode_ords{$_}} @anode_idxs){
-            print "MWE candidate overlaps with something already picked, skipping\n";
+            #print "MWE candidate overlaps with something already picked, skipping\n";
             next;
         }
         # find the t-nodes which map onto those a-nodes
@@ -165,25 +167,27 @@ sub process_atree {
         #print "tnodes: " . join(' ', map {$_->t_lemma} @tnodes) . "\n";
         # we can only collapse things if there are multiple t-nodes
         if (scalar(@tnodes) <= 1) {
-            print "too few nodes for processing\n";
+            # print "too few nodes for processing\n";
             next;
         }
         # determine if the t-nodes we have found are in a single treelet
         #my ($head, $added_nodes_rf) = find_connected_treelet(@tnodes);
         my $head = check_is_connected_treelet(@tnodes);
         if (!$head){
-            print "could not find connected treelet\n";
+            # print "could not find connected treelet\n";
             next;
         }
-        print "found $head\n";
+        # print "found $head\n";
         # we've found a MWE candidate; mark its anodes as belonging to a MWE candidate
         foreach (@anode_idxs) {$marked_anode_ords{$_} = 1;}
 
-        reconnect_descendants($head, @tnodes);
+        print "UBERMWE: \"" . $match->[1] . "\"";
 
-        collapse_composite_node($head, @tnodes);
+        $self->reconnect_descendants($head, @tnodes);
 
-        rewrite_head_node($head, $match);
+        $self->collapse_composite_node($head, @tnodes);
+
+        $self->rewrite_head_node($head, $match);
     }
 }
 
@@ -206,7 +210,7 @@ sub check_is_connected_treelet{
 
 sub reconnect_descendants {
     # find all nodes under this MWE which are not going to be collapsed
-    my ($head, @nodes) = @_;
+    my ($self, $head, @nodes) = @_;
 
     # hash to act as a set of nodes contained in the treelet
     my %in_treelet = map {($_,1)} @nodes;
@@ -217,40 +221,40 @@ sub reconnect_descendants {
         next if $in_treelet{$desc};
         my $parent = $desc->get_parent();
         if ($in_treelet{$parent} && $parent != $head) {
-            reconnect_descendant($desc, $head, @nodes);
+            $self->reconnect_descendant($desc, $head, @nodes);
         }
     }
     return;
 }
 
 sub reconnect_descendant{
-    my ($desc, $head, @nodes) = @_;
+    my ($self, $desc, $head, @nodes) = @_;
     #print $desc{t_lemma} . "\n";
     #print $desc . "\n";
     #print $head . "\n";
     #print $head->t_lemma . "\n";
-    print "reconnect " . $desc->t_lemma . " to " . $head->t_lemma . "\n";
+    # print "reconnect " . $desc->t_lemma . " to " . $head->t_lemma . "\n";
     $desc->set_parent($head);
     # TODO: store treelet configuration
 }
 
 sub collapse_composite_node{
-    my ($head, @nodes) = @_;
+    my ($self, $head, @nodes) = @_;
     foreach my $node (@nodes) {
         next if ($node == $head);
-        print "delete " . $node->t_lemma . "\n";
+        # print "delete " . $node->t_lemma . "\n";
         $node->remove({children=>q(remove)});
         # TODO: store treelet configuration
     }
 }
 
 sub rewrite_head_node{
-    my ($head, $match) = @_;
+    my ($self, $head, $match) = @_;
     my $mwe = $match->[1];
     $mwe =~ s/\s+/_/g;
     #print "MWE candidate is: $mwe\n";
     #$head->t_lemma = $mwe;
-    $head->set_attr(q(t_lemma),$mwe);
+    $head->set_t_lemma($mwe);
     # TODO: encode treelet configuration into head node
 }
 
