@@ -243,6 +243,7 @@ sub collapse_composite_node{
     foreach my $node (@nodes) {
         next if ($node == $head);
         # print "delete " . $node->t_lemma . "\n";
+        next if $node->isa('Treex::Core::Node::Deleted');
         $node->remove({children=>q(remove)});
         # TODO: store treelet configuration
     }
