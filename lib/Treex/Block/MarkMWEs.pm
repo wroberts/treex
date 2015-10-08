@@ -136,10 +136,9 @@ sub process_atree {
 
     my $matches = $self->_match_phrases_in_atree(\@all_anodes, $self->_trie);
 
-    # sort matches first on order, increasing
-    my @sorted_matches = sort {$a->[2] <=> $b->[2]} @$matches;
-    # sort matches again on compositionality, increasing
-    @sorted_matches = sort {$a->[0] <=> $b->[0]} @sorted_matches;
+    # sort matches again on compositionality, increasing; resolve ties
+    # by sorting matches on order, increasing
+    my @sorted_matches = sort {$a->[0] <=> $b->[0] || $a->[2] <=> $b->[2]} @$matches;
 
     # create a hash to keep track of which a-nodes in this sentence
     # have been "marked" as belonging to a MWE
@@ -179,11 +178,11 @@ sub process_atree {
         # we've found a MWE candidate; mark its anodes as belonging to a MWE candidate
         foreach (@anode_idxs) {$marked_anode_ords{$_} = 1;}
 
-        reconnect_descendants($head, @tnodes);
+        $self->reconnect_descendants($head, @tnodes);
 
-        collapse_composite_node($head, @tnodes);
+        $self->collapse_composite_node($head, @tnodes);
 
-        rewrite_head_node($head, $match);
+        $self->rewrite_head_node($head, $match);
     }
 }
 
@@ -206,7 +205,7 @@ sub check_is_connected_treelet{
 
 sub reconnect_descendants {
     # find all nodes under this MWE which are not going to be collapsed
-    my ($head, @nodes) = @_;
+    my ($self, $head, @nodes) = @_;
 
     # hash to act as a set of nodes contained in the treelet
     my %in_treelet = map {($_,1)} @nodes;
@@ -217,14 +216,14 @@ sub reconnect_descendants {
         next if $in_treelet{$desc};
         my $parent = $desc->get_parent();
         if ($in_treelet{$parent} && $parent != $head) {
-            reconnect_descendant($desc, $head, @nodes);
+            $self->reconnect_descendant($desc, $head, @nodes);
         }
     }
     return;
 }
 
 sub reconnect_descendant{
-    my ($desc, $head, @nodes) = @_;
+    my ($self, $desc, $head, @nodes) = @_;
     #print $desc{t_lemma} . "\n";
     #print $desc . "\n";
     #print $head . "\n";
@@ -235,7 +234,7 @@ sub reconnect_descendant{
 }
 
 sub collapse_composite_node{
-    my ($head, @nodes) = @_;
+    my ($self, $head, @nodes) = @_;
     foreach my $node (@nodes) {
         next if ($node == $head);
         print "delete " . $node->t_lemma . "\n";
@@ -245,12 +244,12 @@ sub collapse_composite_node{
 }
 
 sub rewrite_head_node{
-    my ($head, $match) = @_;
+    my ($self, $head, $match) = @_;
     my $mwe = $match->[1];
     $mwe =~ s/\s+/_/g;
     #print "MWE candidate is: $mwe\n";
     #$head->t_lemma = $mwe;
-    $head->set_attr(q(t_lemma),$mwe);
+    $head->set_t_lemma($mwe);
     # TODO: encode treelet configuration into head node
 }
 
