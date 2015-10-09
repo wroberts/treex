@@ -311,7 +311,7 @@ sub _run_job_script {
     else {
         my $mem       = $self->mem;
         #my $qsub_opts = ''; # UPV/EHU
-        my $qsub_opts = '-cwd -e error/ -S /bin/bash';
+        my $qsub_opts = '-cwd -e error/ -V -S /home/anglistik/robertsw/local-clou/bin/bash';
         if ($mem){
             my ($h_vmem, $unit) = ($mem =~ /(\d+)(.*)/);
             $h_vmem = (2*$h_vmem) . $unit;
