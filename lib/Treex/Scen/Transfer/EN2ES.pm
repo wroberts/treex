@@ -71,12 +71,12 @@ sub get_scenario_string {
     $self->gazetteer ? 'T2T::TrGazeteerItems src_lang='.$self->src_lang : (),
     'T2T::EN2ES::TrLTryRules',
     "T2T::TrFAddVariantsInterpol model_dir=$TM_DIR models='
-      static 1.0 hu_trained_en2es_indomain_formeme.static.gz
-      maxent 0.5 hu_trained_en2es_indomain_formeme.maxent.gz
+      static 1.0 hu_trained_en2es_formeme.static.gz
+      maxent 0.5 hu_trained_en2es_formeme.maxent.gz
       $IT_FORMEME_MODELS'",
     "T2T::TrLAddVariantsInterpol model_dir=$TM_DIR models='
-      static 0.5 hu_trained_en2es_indomain_tlemma.static.gz
-      maxent 1.0 hu_trained_en2es_indomain_tlemma.maxent.gz
+      static 0.5 hu_trained_en2es_tlemma.static.gz
+      maxent 1.0 hu_trained_en2es_tlemma.maxent.gz
       $IT_LEMMA_MODELS'",
     $self->fl_agreement ? 'T2T::FormemeTLemmaAgreement fun='.$self->fl_agreement : (),
     'Util::DefinedAttr tnode=t_lemma,formeme message="after simple transfer"',
