@@ -60,7 +60,7 @@ sub process_document {
 		$anodes[$j]->set_conll_deprel("");
 	    }
 	    else {
-		my ( $id, $form, $lemma, $cpos, $pos, $feat, $head, $deprel, @apreds ) = split( /\s+/, $nodes[$j] );
+		my ( $id, $form, $lemma, $cpos, $pos, $feat, $head, $deprel, @apreds ) = split( /\t/, $nodes[$j] );
 
 		$anodes[$j]->set_form($form);
 		$anodes[$j]->set_lemma($lemma);
