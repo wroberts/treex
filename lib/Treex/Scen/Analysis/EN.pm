@@ -148,7 +148,6 @@ sub get_scenario_string {
     $self->valframes ? 'A2T::EN::SetValencyFrameRefVW' : (),
     'A2T::EN::MarkReferentialIt resolver_type=nada threshold=0.5 suffix=nada_0.5', # you need Treex::External::NADA installed for this
     'A2T::EN::FindTextCoref',
-    'MarkMWEs phrase_list_path=/work/robertsw/qtleap/mwe-v2/MWE_ID_en-europarl_010_en-es.utf8.txt.gz',
     ;
 
     return $scen;
