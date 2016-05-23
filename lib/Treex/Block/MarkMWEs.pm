@@ -8,6 +8,7 @@ use Treex::Tool::Algorithm::TreeUtils;
 extends 'Treex::Core::Block';
 
 has 'phrase_list_path' => ( is => 'ro', isa => 'Str', default => '/data/mwes.txt' );
+has 'comp_thresh' => ( is => 'ro', isa => 'Num', default => 0.5 );
 has '_trie' => ( is => 'ro', isa => 'HashRef', builder => '_build_trie', lazy => 1);
 
 sub BUILD {
@@ -37,6 +38,7 @@ sub _build_trie {
         chomp $line;
         #print $line . "\n";
         my ($compo, $mwe) = split /\t/, $line;
+        if ($compo > $self->comp_thresh) {last;}
         _insert_phrase_to_trie($trie, $mwe, $compo);
         $linecount += 1;
     }
@@ -181,7 +183,8 @@ sub process_atree {
         # we've found a MWE candidate; mark its anodes as belonging to a MWE candidate
         foreach (@anode_idxs) {$marked_anode_ords{$_} = 1;}
 
-        log_info "UBERMWE: \"" . $match->[1] . "\"";
+        # reproduce input format: compo \t MWE
+        log_info "UBERMWE: $match->[0]\t$match->[1]";
 
         $self->reconnect_descendants($head, @tnodes);
 
