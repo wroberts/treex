@@ -26,7 +26,7 @@ my $INFO_LABEL = "__INFO__";
 sub _build_trie {
     my ($self) = @_;
 
-    log_info "Loading the MWE list with compositionality <= ${$self}{'comp_thresh'}...";
+    log_info "Loading the MWE list with compositionality <= $self->{'comp_thresh'}...";
     log_info "Building a trie for searching...";
 
     my $path = $self->phrase_list_path;#require_file_from_share($self->phrase_list_path);
