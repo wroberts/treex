@@ -90,12 +90,12 @@ sub get_scenario_string {
     $self->terminology eq 'yes' ? 'T2T::TrLApplyTbxDictionary tbx=data/dictionaries/MicrosoftTermCollection.eu.tbx tbx_src_id=en-US tbx_trg_id=eu-es analysis=@data/dictionaries/MicrosoftTermCollection.eu.filelist analysis_src_language=en analysis_src_selector=src analysis_trg_language=eu analysis_trg_selector=trg src_blacklist=data/dictionaries/MicrosoftTermCollection.en-eu.src.blacklist.txt' : (),
 
     "T2T::TrFAddVariantsInterpol model_dir=$TM_DIR models='
-      static 1.0 eu-elhuyar-baseline_formeme.static.gz
-      maxent 0.5 eu-elhuyar-baseline_formeme.maxent.gz
+      static 1.0 20150930_formeme.static.gz
+      maxent 0.5 20150930_formeme.maxent.gz
       $IT_FORMEME_MODELS'",
     "T2T::TrLAddVariantsInterpol model_dir=$TM_DIR models='
-      static 0.5 eu-elhuyar-baseline_tlemma.static.gz
-      maxent 1.0 eu-elhuyar-baseline_tlemma.maxent.gz
+      static 0.5 20150930_tlemma.static.gz
+      maxent 1.0 20150930_tlemma.maxent.gz
       $IT_LEMMA_MODELS'",
 
     $self->fl_agreement ? 'T2T::FormemeTLemmaAgreement fun='.$self->fl_agreement : (),
