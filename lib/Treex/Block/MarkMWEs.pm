@@ -23,6 +23,29 @@ sub process_start {
 
 my $INFO_LABEL = "__INFO__";
 
+# http://stackoverflow.com/q/5667443/1062499
+sub my_fopen {
+  my $mode = shift;
+  my $filename = shift;
+  if ($filename =~ /\.gz$/) {
+      $mode =~ s/^\+?[<>]/$1:gzip/;
+      #if ($mode eq "<") {
+      #    open my $fh, "<:gzip:utf8", $path  or die "Could not open file $path!\n";
+      #
+      #    open(my $fp, "-|", "/usr/bin/gzcat $filename");
+      #    #my $fp = gzopen($filename, "rb") ;
+      #    return $fp;
+      #}
+      #if ($mode eq ">") {
+      #    open(my $fp, "|-", "/usr/bin/gzip > $filename");
+      #    #my $fp = gzopen($filename, "wb") ;
+      #    return $fp;
+      #}
+  }
+  open(my $fp, $mode, $filename);
+  return $fp;
+}
+
 sub _build_trie {
     my ($self) = @_;
 
@@ -30,7 +53,8 @@ sub _build_trie {
     log_info "Building a trie for searching...";
 
     my $path = $self->phrase_list_path;#require_file_from_share($self->phrase_list_path);
-    open my $fh, "<:gzip:utf8", $path  or die "Could not open file $path!\n";
+    #open my $fh, "<:gzip:utf8", $path  or die "Could not open file $path!\n";
+    my $fh = my_fopen "<:utf8", $path or die "Could not open file $path!\n";
 
     my $linecount = 0;
     my $trie = {};
