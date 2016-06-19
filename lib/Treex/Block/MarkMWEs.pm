@@ -28,7 +28,7 @@ sub my_fopen {
   my $mode = shift;
   my $filename = shift;
   if ($filename =~ /\.gz$/) {
-      $mode =~ s/^\+?[<>]/$1:gzip/;
+      $mode =~ s/^(\+?[<>])/$1:gzip/;
       #if ($mode eq "<") {
       #    open my $fh, "<:gzip:utf8", $path  or die "Could not open file $path!\n";
       #
