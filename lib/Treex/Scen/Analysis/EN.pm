@@ -148,7 +148,7 @@ sub get_scenario_string {
     $self->valframes ? 'A2T::EN::SetValencyFrameRefVW' : (),
     'A2T::EN::MarkReferentialIt resolver_type=nada threshold=0.5 suffix=nada_0.5', # you need Treex::External::NADA installed for this
     'A2T::EN::FindTextCoref',
-    'MarkMWEs phrase_list_path=/home/anglistik/robertsw/.treex/share/data/models/translation/en2eu/eu-indomain-theta0.1_mwes_trained.utf8.tsv',
+    'MarkMWEs phrase_list_path=/home/anglistik/robertsw/.treex/share/data/models/translation/en2eu/eu-indomain-theta0.2_mwes_trained.utf8.tsv',
     ;
 
     return $scen;
