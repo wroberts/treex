@@ -71,6 +71,9 @@ sub get_scenario_string {
 
     my $IT_LEMMA_MODELS = '';
     my $IT_FORMEME_MODELS = '';
+    $self->{tm_adaptation} = 'no';
+    $self->{terminology} = 'no';
+    $self->{gazetteer} = 0;
     if ($self->tm_adaptation eq 'interpol'){
         $IT_LEMMA_MODELS = "static 0.5 IT/20150728_batch1q-tlemma.static.gz\n      maxent 1.0 IT/20150728_batch1q-tlemma.maxent.gz";
         $IT_FORMEME_MODELS = "static 1.0 IT/20150728_batch1q-formeme.static.gz\n      maxent 0.5 IT/20150728_batch1q-formeme.maxent.gz";
