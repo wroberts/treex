@@ -35,6 +35,7 @@ sub BUILD {
     if (!defined $self->hideIT){
         $self->{hideIT} = $self->domain eq 'IT' ? 1 : 0;
     }
+    $self->{gazetteer} = 0;
     if (!defined $self->gazetteer){
         $self->{gazetteer} = $self->domain eq 'IT' ? 'wiki' : '0';
     }
