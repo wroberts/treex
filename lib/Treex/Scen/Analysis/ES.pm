@@ -57,6 +57,7 @@ sub get_scenario_string {
     'A2T::MarkReflpronCoref',
     'A2T::ES::FixReflexiveVerbs',
 #    'A2T::ES::FixTlemmas',
+    'MarkMWEs phrase_list_path=/home/anglistik/robertsw/.treex/share/data/models/translation/en2eu/esen-europarl-theta0.1-v1_mwes_trained.utf8.tsv',
     ;
 
     return $scen;
