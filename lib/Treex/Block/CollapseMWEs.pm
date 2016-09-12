@@ -223,7 +223,7 @@ sub process_atree {
         log_info "UBERMWE: $match->[0]\t$match->[1]";
 
         # store treelet configuration
-        my $repr = $self->build_collapsed_repr($head, @tnodes, $match);
+        my $repr = $self->build_collapsed_repr($head, $match->[1], @tnodes);
 
         $self->reconnect_descendants($head, @tnodes);
 
@@ -252,7 +252,7 @@ sub check_is_connected_treelet{
 }
 #use Devel::Peek;
 sub build_collapsed_repr{
-    my ($self, $head, @nodes, $match) = @_;
+    my ($self, $head, $mwe, @nodes) = @_;
 
     # hash to act as a set of nodes contained in the treelet
     my %in_treelet = map {($_,1)} @nodes;
@@ -274,8 +274,6 @@ sub build_collapsed_repr{
             # for the top node, we just record the lemma
             $xmlnode->setAttribute( "t_lemma", $head->t_lemma );
             # also record the MWE we've seen, in case it's not obvious
-            my $mwe = $match->[1];
-            $mwe =~ s/\s+/_/g;
             $xmlnode->setAttribute( "mwe", $mwe );
         } else {
             if ($in_treelet{$current}) {
