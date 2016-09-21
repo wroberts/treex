@@ -337,12 +337,42 @@ sub reconnect_descendants {
     return;
 }
 
+# add together alignment type flags (such as gdfa, int, left, right, revgdfa)
+sub unify_alignment_types {
+    my ($type1, $type2) = @_;
+
+    my %comps1 = map {($_,1)} split /\./, $type1;
+    my %comps2 = map {($_,1)} split /\./, $type2;
+    my %union = (%comps1, %comps2);
+    $union{'gdfa'} = $union{'revgdfa'} = $union{'int'} = 1 if ($union{'left'} && $union{'right'});
+    return join(".", grep {$union{$_}} qw(gdfa int left right revgdfa));
+}
+
+sub align_head_with_anode{
+    my ($head, $anode, $atypes) = @_;
+
+    # get the nodes already aligned to head
+    my ($ali_tnodes_rf, $ali_types_rf) = $node->get_aligned_nodes({directed=>1});
+
+    # check whether $head is already aligned to $anode or not
+    my @goodidxs = grep {$ali_tnodes_rf->[$i] == $anode} (0 .. $#{$ali_tnodes_rf});
+
+    if (@goodidxs) {
+        # if it is, we unify the newly indicated alignment types to the link
+        my $old_head_atypes = $ali_types_rf[$goodidxs[0]];
+        $atypes = unify_alignment_types($atypes, $old_head_atypes);
+        # now remove the alignment from $head to $anode
+        $head->delete_aligned_node($anode, $old_head_atypes);
+    }
+    # align head with anode using the new union of alignment types
+    $head->add_aligned_node($anode, $atypes)
 }
 
 sub collapse_composite_node{
     my ($self, $head, @nodes) = @_;
     foreach my $node (@nodes) {
         next if ($node == $head);
+
         # print "delete " . $node->t_lemma . "\n";
         next if $node->isa('Treex::Core::Node::Deleted');
 
@@ -351,10 +381,10 @@ sub collapse_composite_node{
             my $anode = $ali_trg_tnodes_rf->[$i];
             my $atypes = $ali_types_rf->[$i];
             print "node $anode aligned to $node with types $atypes\n";
-            #   $head->add_aligned_node($anode, $atype)
+            align_head_with_anode($head, $anode, $atypes);
         }
 
-        $node->remove({children=>q(remove)});
+        $node->remove({children=>q(rehang)});
     }
 }
 
