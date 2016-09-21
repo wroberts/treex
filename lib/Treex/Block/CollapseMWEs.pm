@@ -230,7 +230,7 @@ sub process_atree {
         $self->collapse_composite_node($head, @tnodes);
 
         # encode treelet configuration into head node
-        $self->rewrite_head_node($head, $repr);
+        $head->set_t_lemma($repr);
     }
 }
 
@@ -250,6 +250,7 @@ sub check_is_connected_treelet{
     }
     return $top_node;
 }
+
 #use Devel::Peek;
 sub build_collapsed_repr{
     my ($self, $head, $mwe, @nodes) = @_;
@@ -330,20 +331,12 @@ sub reconnect_descendants {
         next if $in_treelet{$desc};
         my $parent = $desc->get_parent();
         if ($in_treelet{$parent} && $parent != $head) {
-            $self->reconnect_descendant($desc, $head, @nodes);
+            $desc->set_parent($head);
         }
     }
     return;
 }
 
-sub reconnect_descendant{
-    my ($self, $desc, $head, @nodes) = @_;
-    #print $desc{t_lemma} . "\n";
-    #print $desc . "\n";
-    #print $head . "\n";
-    #print $head->t_lemma . "\n";
-    # print "reconnect " . $desc->t_lemma . " to " . $head->t_lemma . "\n";
-    $desc->set_parent($head);
 }
 
 sub collapse_composite_node{
@@ -365,11 +358,6 @@ sub collapse_composite_node{
 
         $node->remove({children=>q(remove)});
     }
-}
-
-sub rewrite_head_node{
-    my ($self, $head, $repr) = @_;
-    $head->set_t_lemma($repr);
 }
 
 1;
