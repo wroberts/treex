@@ -346,9 +346,7 @@ sub collapse_composite_node{
         # print "delete " . $node->t_lemma . "\n";
         next if $node->isa('Treex::Core::Node::Deleted');
 
-        my $filter //= {};
-        $filter->{directed} = 1;
-        my ($ali_trg_tnodes_rf, $ali_types_rf) = $node->get_aligned_nodes($filter);
+        my ($ali_trg_tnodes_rf, $ali_types_rf) = $node->get_aligned_nodes({directed=>1});
         for my $i (0 .. $#{$ali_trg_tnodes_rf}) {
             my $anode = $ali_trg_tnodes_rf->[$i];
             my $atypes = $ali_types_rf->[$i];
