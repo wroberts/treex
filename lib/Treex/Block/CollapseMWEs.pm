@@ -307,14 +307,11 @@ sub build_collapsed_repr{
             }
         }
     }
-    my $repr = $root->toString(0, "UTF-8");
-    #binmode(STDOUT);
-    #print $repr, "\n";
-    open(my $fh, '>>', $self->output_path) or die "Could not open file '$self->output_path'";
-    binmode($fh);
+    # keep repr as a character string (UTF-8 encoded with the UTF8 flag on)
+    my $repr = $root->toString(0);
+    open(my $fh, '>>:encoding(UTF-8)', $self->output_path) or die "Could not open file '$self->output_path'";
     say $fh $repr;
     close $fh;
-    #print $dom->toString(0);
     return $repr;
 }
 
