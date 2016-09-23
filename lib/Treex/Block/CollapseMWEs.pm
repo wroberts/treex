@@ -1,13 +1,24 @@
-package Treex::Block::MarkMWEs;
+package Treex::Block::CollapseMWEs;
 use utf8;
 use Moose;
 use Treex::Core::Common;
 use Treex::Core::Resource;
-use Treex::Tool::Algorithm::TreeUtils;
+#use JSON;
+use XML::LibXML;
+#use Treex::Block::T2T::CopyTtree;
+# Treex::Block::T2T::CopyTtree::ATTRS_TO_COPY
+my @ATTRS_TO_COPY = qw(ord t_lemma functor formeme is_member nodetype is_generated subfunctor
+    is_name_of_person is_clause_head is_relclause_head is_dsp_root is_passive is_parenthesis is_reflexive
+    voice sentmod tfa gram/sempos gram/gender gram/number gram/degcmp
+    gram/verbmod gram/deontmod gram/tense gram/aspect gram/resultative
+    gram/dispmod gram/iterativeness gram/indeftype gram/person gram/numertype
+    gram/politeness gram/negation gram/definiteness gram/diathesis clause_number);
+
 
 extends 'Treex::Core::Block';
 
-has 'phrase_list_path' => ( is => 'ro', isa => 'Str', default => '/data/mwes.txt' );
+has 'phrase_list_path' => ( is => 'ro', isa => 'Str', default => '/data/mwes2.txt' );
+has 'output_path' => ( is => 'ro', isa => 'Str', default => '/data/mwes2.txt' );
 has 'comp_thresh' => ( is => 'ro', isa => 'Num', default => 0.5 );
 has '_trie' => ( is => 'ro', isa => 'HashRef', builder => '_build_trie', lazy => 1);
 
@@ -210,11 +221,15 @@ sub process_atree {
         # reproduce input format: compo \t MWE
         log_info "UBERMWE: $match->[0]\t$match->[1]";
 
+        # store treelet configuration
+        my $repr = $self->build_collapsed_repr($head, $match->[1], @tnodes);
+
         $self->reconnect_descendants($head, @tnodes);
 
         $self->collapse_composite_node($head, @tnodes);
 
-        $self->rewrite_head_node($head, $match);
+        # encode treelet configuration into head node
+        $head->set_t_lemma($repr);
     }
 }
 
@@ -235,6 +250,73 @@ sub check_is_connected_treelet{
     return $top_node;
 }
 
+#use Devel::Peek;
+sub build_collapsed_repr{
+    my ($self, $head, $mwe, @nodes) = @_;
+
+    # hash to act as a set of nodes contained in the treelet
+    my %in_treelet = map {($_,1)} @nodes;
+
+    my $dom = XML::LibXML::Document->new( "1.0", "UTF-8" );
+    my $root = $dom->createElement( "MWE" );
+    $dom->setDocumentElement( $root );
+    # format: (CURRENT, XMLNODE)
+    my @todo = ([$head, $root]);
+    while (@todo) {
+        my @cval = @{shift @todo};
+        my $current = $cval[0];
+        my $xmlnode = $cval[1];
+        #binmode(STDOUT);
+        #print "current ", Dumper($current->t_lemma);
+        #Dump($current->t_lemma);
+        # encode current into xmlnode
+        if ($current == $head) {
+            # for the top node, we just record the lemma
+            $xmlnode->setAttribute( "t_lemma", $head->t_lemma );
+            # also record the MWE we've seen, in case it's not obvious
+            $xmlnode->setAttribute( "mwe", $mwe );
+        } else {
+            if ($in_treelet{$current}) {
+                # for all nodes under the head which are part of the
+                # MWE, we encode all of the node's non-undef
+                # properties
+                for (grep {$current->get_attr($_)}  @ATTRS_TO_COPY) {
+                    $xmlnode->setAttribute( $_ =~ s./.-.r, $current->get_attr($_) );
+                }
+            } else {
+                # for nodes which are not part of the MWE, we just
+                # encode their formeme
+                $xmlnode->setAttribute( "formeme", $current->get_attr("formeme") );
+            }
+        }
+        #binmode(STDOUT);
+        #print "xmlnode ", $xmlnode->toString(0, "UTF-8"), "\n";
+        # push onto @todo, if we are still in the MWE
+        if ($in_treelet{$current}) {
+            my @children = sort { $a->ord() <=> $b->ord() } $current->get_children();
+            for (@children) {
+                my $childtagname = "";
+                if ($in_treelet{$_}) {
+                    $childtagname = ($_->ord() < $current->ord()) ? "l" : "r";
+                } else {
+                    $childtagname = ($_->ord() < $current->ord()) ? "lx" : "rx";
+                }
+                my $xmlchild = $xmlnode->addNewChild( '', $childtagname );
+                push @todo, [$_, $xmlchild];
+            }
+        }
+    }
+    # keep repr as a character string (UTF-8 encoded with the UTF8 flag on)
+    my $repr = $root->toString(0);
+    open(my $fh, '>>:encoding(UTF-8)', $self->output_path) or die "Could not open file '$self->output_path'";
+    say $fh $repr;
+    close $fh;
+    return $repr;
+}
+
+# cd /Users/wroberts/Documents/Berlin/qtleap/docker
+# rsync -av /Users/wroberts/Documents/Berlin/qtleap/treex/lib/Treex/Block/{Collapse,Expand}MWEs.pm Treex/Block/
+
 sub reconnect_descendants {
     # find all nodes under this MWE which are not going to be collapsed
     my ($self, $head, @nodes) = @_;
@@ -248,42 +330,87 @@ sub reconnect_descendants {
         next if $in_treelet{$desc};
         my $parent = $desc->get_parent();
         if ($in_treelet{$parent} && $parent != $head) {
-            $self->reconnect_descendant($desc, $head, @nodes);
+            $desc->set_parent($head);
         }
     }
     return;
 }
 
-sub reconnect_descendant{
-    my ($self, $desc, $head, @nodes) = @_;
-    #print $desc{t_lemma} . "\n";
-    #print $desc . "\n";
-    #print $head . "\n";
-    #print $head->t_lemma . "\n";
-    # print "reconnect " . $desc->t_lemma . " to " . $head->t_lemma . "\n";
-    $desc->set_parent($head);
-    # TODO: store treelet configuration
+# add together alignment type flags (such as gdfa, int, left, right, revgdfa)
+sub unify_alignment_types {
+    my ($type1, $type2) = @_;
+
+    my %comps1 = map {($_,1)} split /\./, $type1;
+    my %comps2 = map {($_,1)} split /\./, $type2;
+    my %union = (%comps1, %comps2);
+    $union{'gdfa'} = $union{'revgdfa'} = $union{'int'} = 1 if ($union{'left'} && $union{'right'});
+    return join(".", grep {$union{$_}} qw(gdfa int left right revgdfa));
+}
+
+sub align_head_with_anode{
+    my ($head, $anode, $atypes) = @_;
+
+    # get the nodes already aligned to head
+    my ($ali_tnodes_rf, $ali_types_rf) = $head->get_aligned_nodes({directed=>1});
+
+    # check whether $head is already aligned to $anode or not
+    my @goodidxs = grep {$ali_tnodes_rf->[$_] == $anode} (0 .. $#{$ali_tnodes_rf});
+
+    if (@goodidxs) {
+        # if it is, we unify the newly indicated alignment types to the link
+        my $old_head_atypes = $ali_types_rf->[$goodidxs[0]];
+        log_info "head already aligned, unifying types old $old_head_atypes and new $atypes.";
+        $atypes = unify_alignment_types($atypes, $old_head_atypes);
+        log_info "Result is $atypes";
+        # now remove the alignment from $head to $anode
+        $head->delete_aligned_node($anode, $old_head_atypes);
+    }
+    # align head with anode using the new union of alignment types
+    log_info "aligning head '" . $head->t_lemma . "' to node '" . $anode->t_lemma . "' with types '$atypes'.";
+    $head->add_aligned_node($anode, $atypes)
+}
+
+sub move_alignments {
+    my ($node, $head) = @_;
+
+    #print '$node->language is ', $node->language, "\n";
+    if ($node->language ne 'en') {
+        my ($ali_trg_tnodes_rf, $ali_types_rf) = $node->get_aligned_nodes({directed=>1});
+        for my $i (0 .. $#{$ali_trg_tnodes_rf}) {
+            my $anode = $ali_trg_tnodes_rf->[$i];
+            my $atypes = $ali_types_rf->[$i];
+            log_info "node '" . $anode->t_lemma . "' aligned to '" . $node->t_lemma . "' with types $atypes";
+            align_head_with_anode($head, $anode, $atypes);
+        }
+    } else {
+        # alignment links are not stored on English nodes, so we need
+        # to search the tree on the other side
+        foreach my $ali_node ($node->get_referencing_nodes('alignment')) {
+            my ($ali_trg_tnodes_rf, $ali_types_rf) = $ali_node->get_aligned_nodes({directed=>1});
+            for my $i (0 .. $#{$ali_trg_tnodes_rf}) {
+                my $anode = $ali_trg_tnodes_rf->[$i];
+                if ($anode == $node) {
+                    my $atypes = $ali_types_rf->[$i];
+                    log_info "node '" . $ali_node->t_lemma . "' aligned to '" . $node->t_lemma . "' with types $atypes";
+                    align_head_with_anode($ali_node, $head, $atypes);
+                }
+            }
+        }
+    }
 }
 
 sub collapse_composite_node{
     my ($self, $head, @nodes) = @_;
     foreach my $node (@nodes) {
         next if ($node == $head);
+
         # print "delete " . $node->t_lemma . "\n";
         next if $node->isa('Treex::Core::Node::Deleted');
-        $node->remove({children=>q(remove)});
-        # TODO: store treelet configuration
-    }
-}
 
-sub rewrite_head_node{
-    my ($self, $head, $match) = @_;
-    my $mwe = $match->[1];
-    $mwe =~ s/\s+/_/g;
-    #print "MWE candidate is: $mwe\n";
-    #$head->t_lemma = $mwe;
-    $head->set_t_lemma($mwe);
-    # TODO: encode treelet configuration into head node
+        move_alignments($node, $head);
+
+        $node->remove({children=>q(rehang)});
+    }
 }
 
 1;
@@ -292,7 +419,7 @@ sub rewrite_head_node{
 
 =head1 NAME
 
-Treex::Block::MarkMWEs - reduce multiword expressions to single composite t-nodes
+Treex::Block::CollapseMWEs - reduce multiword expressions to single composite t-nodes
 
 =head1 DESCRIPTION
 
