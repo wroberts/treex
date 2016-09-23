@@ -23,11 +23,11 @@ sub set_order {
         #
         # this branch only happens for the first created
         # left child
-        if ($tnode->get_children()) {
-            $tchild->shift_before_subtree(($tnode->get_children())[0]);
-        } else {
+        #if ($tnode->get_children()) {
+        #    $tchild->shift_before_subtree(($tnode->get_children())[0]);
+        #} else {
             $tchild->shift_before_node($tnode);
-        }
+        #}
     }
 }
 
@@ -129,7 +129,7 @@ sub process_tnode {
                         # SIMPLE CHECKING: just check for the presence of a node
                         if (@cands) {
                             # OK
-                            log_info "found expected child of node " . $tnode->t_lemma . " with formeme " . $xmlchild->getAttribute('formeme') . ": " . $cands[0]->t_lemma;
+                            log_info "found expected child of node " . $tnode->t_lemma . " with formeme " . $xmlchild->getAttribute('formeme') . ": " . $cands[0]->t_lemma . " with formeme " . $cands[0]->formeme;
                             # move the node into location
                             $cands[0]->set_parent($tnode) if $tnode != $troot;
                             set_order($tlast, $tnode, $cands[0]);
@@ -145,6 +145,14 @@ sub process_tnode {
                     }
                 }
             }
+        }
+
+        # warn about any unused arguments here
+        if ($tlefti <= $#tleft) {
+            log_info "warning unused left arguments: " . join(', ', map {$_->get_attr('t_lemma')} @tleft[$tlefti,-1]);
+        }
+        if ($trighti <= $#tright) {
+            log_info "warning unused right arguments: " . join(', ', map {$_->get_attr('t_lemma')} @tright[$trighti,-1]);
         }
     }
 }
