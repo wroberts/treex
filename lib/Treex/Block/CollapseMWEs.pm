@@ -3,7 +3,6 @@ use utf8;
 use Moose;
 use Treex::Core::Common;
 use Treex::Core::Resource;
-use Treex::Tool::Algorithm::TreeUtils;
 #use JSON;
 use XML::LibXML;
 #use Treex::Block::T2T::CopyTtree;
@@ -315,6 +314,9 @@ sub build_collapsed_repr{
     return $repr;
 }
 
+# cd /Users/wroberts/Documents/Berlin/qtleap/docker
+# rsync -av /Users/wroberts/Documents/Berlin/qtleap/treex/lib/Treex/Block/{Collapse,Expand}MWEs.pm Treex/Block/
+
 sub reconnect_descendants {
     # find all nodes under this MWE which are not going to be collapsed
     my ($self, $head, @nodes) = @_;
@@ -349,20 +351,52 @@ sub align_head_with_anode{
     my ($head, $anode, $atypes) = @_;
 
     # get the nodes already aligned to head
-    my ($ali_tnodes_rf, $ali_types_rf) = $node->get_aligned_nodes({directed=>1});
+    my ($ali_tnodes_rf, $ali_types_rf) = $head->get_aligned_nodes({directed=>1});
 
     # check whether $head is already aligned to $anode or not
-    my @goodidxs = grep {$ali_tnodes_rf->[$i] == $anode} (0 .. $#{$ali_tnodes_rf});
+    my @goodidxs = grep {$ali_tnodes_rf->[$_] == $anode} (0 .. $#{$ali_tnodes_rf});
 
     if (@goodidxs) {
         # if it is, we unify the newly indicated alignment types to the link
-        my $old_head_atypes = $ali_types_rf[$goodidxs[0]];
+        my $old_head_atypes = $ali_types_rf->[$goodidxs[0]];
+        log_info "head already aligned, unifying types old $old_head_atypes and new $atypes.";
         $atypes = unify_alignment_types($atypes, $old_head_atypes);
+        log_info "Result is $atypes";
         # now remove the alignment from $head to $anode
         $head->delete_aligned_node($anode, $old_head_atypes);
     }
     # align head with anode using the new union of alignment types
+    log_info "aligning head '" . $head->t_lemma . "' to node '" . $anode->t_lemma . "' with types '$atypes'.";
     $head->add_aligned_node($anode, $atypes)
+}
+
+sub move_alignments {
+    my ($node, $head) = @_;
+
+    #print '$node->language is ', $node->language, "\n";
+    if ($node->language ne 'en') {
+        my ($ali_trg_tnodes_rf, $ali_types_rf) = $node->get_aligned_nodes({directed=>1});
+        for my $i (0 .. $#{$ali_trg_tnodes_rf}) {
+            my $anode = $ali_trg_tnodes_rf->[$i];
+            my $atypes = $ali_types_rf->[$i];
+            log_info "node '" . $anode->t_lemma . "' aligned to '" . $node->t_lemma . "' with types $atypes";
+            align_head_with_anode($head, $anode, $atypes);
+        }
+    } else {
+        # alignment links are not stored on English nodes, so we need
+        # to search the tree on the other side
+        foreach my $ali_node ($node->get_referencing_nodes('alignment')) {
+            my ($ali_trg_tnodes_rf, $ali_types_rf) = $ali_node->get_aligned_nodes({directed=>1});
+            for my $i (0 .. $#{$ali_trg_tnodes_rf}) {
+                my $anode = $ali_trg_tnodes_rf->[$i];
+                if ($anode == $node) {
+                    my $atypes = $ali_types_rf->[$i];
+                    log_info "node '" . $ali_node->t_lemma . "' aligned to '" . $node->t_lemma . "' with types $atypes";
+                    align_head_with_anode($ali_node, $head, $atypes);
+                }
+            }
+        }
+    }
 }
 
 sub collapse_composite_node{
@@ -373,13 +407,7 @@ sub collapse_composite_node{
         # print "delete " . $node->t_lemma . "\n";
         next if $node->isa('Treex::Core::Node::Deleted');
 
-        my ($ali_trg_tnodes_rf, $ali_types_rf) = $node->get_aligned_nodes({directed=>1});
-        for my $i (0 .. $#{$ali_trg_tnodes_rf}) {
-            my $anode = $ali_trg_tnodes_rf->[$i];
-            my $atypes = $ali_types_rf->[$i];
-            print "node $anode aligned to $node with types $atypes\n";
-            align_head_with_anode($head, $anode, $atypes);
-        }
+        move_alignments($node, $head);
 
         $node->remove({children=>q(rehang)});
     }
