@@ -219,7 +219,7 @@ sub process_atree {
         foreach (@anode_idxs) {$marked_anode_ords{$_} = 1;}
 
         # reproduce input format: compo \t MWE
-        log_info "UBERMWE: $match->[0]\t$match->[1]";
+        log_info "UBERMWE: " . $head->language . "\t$match->[0]\t$match->[1]";
 
         # store treelet configuration
         my $repr = $self->build_collapsed_repr($head, $match->[1], @tnodes);
