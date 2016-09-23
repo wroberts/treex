@@ -131,7 +131,7 @@ sub process_tnode {
                             # OK
                             log_info "found expected child of node " . $tnode->t_lemma . " with formeme " . $xmlchild->getAttribute('formeme') . ": " . $cands[0]->t_lemma;
                             # move the node into location
-                            $cands[0]->set_parent($tnode);
+                            $cands[0]->set_parent($tnode) if $tnode != $troot;
                             set_order($tlast, $tnode, $cands[0]);
                             # increment the children index
                             ${$cidxref} += 1;
