@@ -34,7 +34,7 @@ sub set_order {
 sub process_tnode {
     my ( $self, $tnode ) = @_;
 
-    if ($tnode->t_lemma =~ m"^<MWE .*</MWE>$") {
+    if ($tnode->t_lemma =~ m"^<MWE .*</MWE>$"i) {
         log_info $tnode->t_lemma;
         # interpret the t_lemma string as an XML tree.  for this, we
         # need to stick the XML tag onto the front.
