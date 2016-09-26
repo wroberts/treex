@@ -18,8 +18,8 @@ my @ATTRS_TO_COPY = qw(ord t_lemma functor formeme is_member nodetype is_generat
 extends 'Treex::Core::Block';
 
 has 'phrase_list_path' => ( is => 'ro', isa => 'Str', default => '/data/mwes2.txt' );
-has 'output_path' => ( is => 'ro', isa => 'Str', default => '/data/mwes2.txt' );
 has 'comp_thresh' => ( is => 'ro', isa => 'Num', default => 0.5 );
+has 'mark_only' => ( is => 'ro', isa => 'Bool', default => 0 );
 has '_trie' => ( is => 'ro', isa => 'HashRef', builder => '_build_trie', lazy => 1);
 
 sub BUILD {
@@ -218,11 +218,19 @@ sub process_atree {
         # we've found a MWE candidate; mark its anodes as belonging to a MWE candidate
         foreach (@anode_idxs) {$marked_anode_ords{$_} = 1;}
 
-        # reproduce input format: compo \t MWE
-        log_info "UBERMWE: " . $head->language . "\t$match->[0]\t$match->[1]";
-
         # store treelet configuration
-        my $repr = $self->build_collapsed_repr($head, $match->[1], @tnodes);
+        my $repr = undef;
+        if ($self->mark_only) {
+            $repr = $match->[1] =~ s/\s+/_/rg;
+
+            # reproduce input format: compo \t MWE
+            log_info "UBERMWE: $match->[0]\t$match->[1]";
+        } else {
+            $repr = $self->build_collapsed_repr($head, $match->[1], @tnodes);
+
+            # reproduce input format: compo \t MWE
+            log_info "UBERMWE2: $match->[0]\t$match->[1]";
+        }
 
         $self->reconnect_descendants($head, @tnodes);
 
@@ -308,9 +316,6 @@ sub build_collapsed_repr{
     }
     # keep repr as a character string (UTF-8 encoded with the UTF8 flag on)
     my $repr = $root->toString(0);
-    open(my $fh, '>>:encoding(UTF-8)', $self->output_path) or die "Could not open file '$self->output_path'";
-    say $fh $repr;
-    close $fh;
     return $repr;
 }
 
