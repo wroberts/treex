@@ -35,7 +35,7 @@ sub process_tnode {
     my ( $self, $tnode ) = @_;
 
     if ($tnode->t_lemma =~ m"^<MWE .*</MWE>$"i) {
-        log_info $tnode->t_lemma;
+        log_info "ExpandMWEs: " . $tnode->t_lemma;
         # interpret the t_lemma string as an XML tree.  for this, we
         # need to stick the XML tag onto the front.
         my $xmlstring = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . $tnode->t_lemma;
@@ -44,6 +44,7 @@ sub process_tnode {
         my $doc    = $parser->parse_string($xmlstring);
         my $root = $doc->getDocumentElement;
         log_info "loaded XML, root name is: " . $root->nodeName;
+        log_info "MWE instance: " . $root->getAttribute('mwe');
 
         my $troot = $tnode;
 
