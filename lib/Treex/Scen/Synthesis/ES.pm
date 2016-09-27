@@ -3,6 +3,7 @@ use Moose;
 use Treex::Core::Common;
 
 my $FULL = <<'END';
+ExpandMWEs
 T2T::SetClauseNumber
 T2T::EN2ES::AddNounGender
 T2A::ES::FixAttributeOrder
