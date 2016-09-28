@@ -114,7 +114,7 @@ sub process_tnode {
                     log_info "XML node's child " . $xmlchild->nodeName;
                     # is this child new, or expected?
                     if ($xmlchild->nodeName !~ /x$/) {
-                        log_info "new child, creating child of '" . $tnode->t_lemma . "'";
+                        log_info "new child, creating child of '" . ($tnode->get_attr('t_lemma') // 'new') . "'";
                         # new; create a new child of tnode
                         my $tchild = $tnode->create_child();
                         # set the order
@@ -130,7 +130,7 @@ sub process_tnode {
                         # SIMPLE CHECKING: just check for the presence of a node
                         if (@cands) {
                             # OK
-                            log_info "found expected child of node " . $tnode->t_lemma . " with formeme " . $xmlchild->getAttribute('formeme') . ": " . $cands[0]->t_lemma . " with formeme " . $cands[0]->formeme;
+                            log_info "found expected child of node " . ($tnode->get_attr('t_lemma') // 'new') . " with formeme " . $xmlchild->getAttribute('formeme') . ": " . ($cands[0]->get_attr('t_lemma') // 'new') . " with formeme " . ($cands[0]->get_attr('formeme') // 'none');
                             # move the node into location
                             $cands[0]->set_parent($tnode) if $tnode != $troot;
                             set_order($tlast, $tnode, $cands[0]);
@@ -140,7 +140,7 @@ sub process_tnode {
                             $tlast = $cands[0];
                         } else {
                             # ERROR, say something
-                            log_info "ERROR: expected child of node " . $tnode->t_lemma . " with formeme " . $xmlchild->getAttribute('formeme');
+                            log_info "ERROR: expected child of node " . ($tnode->get_attr('t_lemma') // 'new') . " with formeme " . $xmlchild->getAttribute('formeme');
                             # don't move tlast
                         }
                     }
