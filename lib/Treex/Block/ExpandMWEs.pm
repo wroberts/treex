@@ -127,6 +127,7 @@ sub process_tnode {
                         # expected; are there left/right children of tnode
                         # which could be this node?
                         my @cands = @tchildren[${$cidxref},-1];
+                        log_info "cands last index is $#cands";
                         # SIMPLE CHECKING: just check for the presence of a node
                         if (@cands) {
                             # OK
