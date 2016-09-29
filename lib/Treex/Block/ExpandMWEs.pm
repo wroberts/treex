@@ -130,6 +130,8 @@ sub process_tnode {
                         # SIMPLE CHECKING: just check for the presence of a node
                         if (@cands) {
                             # OK
+                            log_info "tnode undefined" if !defined($tnode);
+                            log_info "cands[0] undefined" if !defined($cands[0]);
                             log_info "found expected child of node " . ($tnode->get_attr('t_lemma') // 'new') . " with formeme " . $xmlchild->getAttribute('formeme') . ": " . ($cands[0]->get_attr('t_lemma') // 'new') . " with formeme " . ($cands[0]->get_attr('formeme') // 'none');
                             # move the node into location
                             $cands[0]->set_parent($tnode) if $tnode != $troot;
