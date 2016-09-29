@@ -38,7 +38,8 @@ sub process_tnode {
         log_info "ExpandMWEs: " . $tnode->t_lemma;
         # interpret the t_lemma string as an XML tree.  for this, we
         # need to stick the XML tag onto the front.
-        my $xmlstring = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . $tnode->t_lemma;
+        my $xmltag = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        my $xmlstring = $xmltag . $tnode->t_lemma;
         # parse the XML into a DOM object
         my $parser = XML::LibXML->new();
         my $doc    = $parser->parse_string($xmlstring);
@@ -47,6 +48,19 @@ sub process_tnode {
         log_info "MWE instance: " . $root->getAttribute('mwe');
 
         my $troot = $tnode;
+
+        # sometimes we get redundant MWEs produced in the output
+        # try to detect and fix this
+        for ($troot->get_children()) {
+            if ($_->get_attr('t_lemma') =~ m"^<MWE .*</MWE>$"i) {
+                if ($parser->parse_string($xmltag . $_->get_attr('t_lemma'))->getDocumentElement->getAttribute('mwe') eq
+                        $root->getAttribute('mwe')) {
+                    log_info "child of root encodes identical MWE, deleting ...";
+                    log_info "child t_lemma was " . $_->get_attr('t_lemma');
+                    $_->remove({children=>q(rehang)});
+                }
+            }
+        }
 
         # get children of troot, sort into left and right
         # these will be arguments to the MWE
