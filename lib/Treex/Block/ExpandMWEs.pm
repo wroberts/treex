@@ -157,10 +157,10 @@ sub process_tnode {
 
         # warn about any unused arguments here
         if ($tlefti <= $#tleft) {
-            log_info "warning unused left arguments: " . join(', ', map {$_->get_attr('t_lemma')} @tleft[$tlefti,-1]);
+            log_info "warning unused left arguments: " . join(', ', map {$_->get_attr('t_lemma')} @tleft[$tlefti .. -1]);
         }
         if ($trighti <= $#tright) {
-            log_info "warning unused right arguments: " . join(', ', map {$_->get_attr('t_lemma')} @tright[$trighti,-1]);
+            log_info "warning unused right arguments: " . join(', ', map {$_->get_attr('t_lemma')} @tright[$trighti .. -1]);
         }
     }
 }
