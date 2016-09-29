@@ -50,7 +50,7 @@ sub process_tnode {
 
         # get children of troot, sort into left and right
         # these will be arguments to the MWE
-        my @tchildren = $troot->get_children( { ordered => 1 } );
+        my @tchildren = grep {defined($_)} $troot->get_children( { ordered => 1 } );
         my @tleft = grep { $_->ord() <= $troot->ord } @tchildren;
         my @tright = grep { $_->ord() >= $troot->ord } @tchildren;
         log_info "root's children " . scalar(@tchildren) . ": " . join(', ', map {$_->get_attr('t_lemma')} @tchildren);
