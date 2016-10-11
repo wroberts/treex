@@ -5,6 +5,7 @@ use Treex::Core::Common;
 use XML::LibXML;
 use Compress::Zlib;
 use MIME::Base64;
+use Encode qw(encode decode);
 
 extends 'Treex::Core::Block';
 
@@ -42,7 +43,7 @@ sub process_tnode {
         # interpret the t_lemma string as an XML tree.  for this, we
         # need to stick the XML tag onto the front.
         my $xmltag = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        my $xmlstring = $xmltag . $tnode->t_lemma;
+        my $xmlstring = $xmltag . encode('utf-8', $tnode->t_lemma);
         # parse the XML into a DOM object
         my $parser = XML::LibXML->new();
         my $doc    = $parser->parse_string($xmlstring);
