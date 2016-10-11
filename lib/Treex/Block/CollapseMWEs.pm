@@ -7,6 +7,7 @@ use Treex::Core::Resource;
 use XML::LibXML;
 use Compress::Zlib;
 use MIME::Base64;
+use Encode qw(encode decode);
 #use Treex::Block::T2T::CopyTtree;
 # Treex::Block::T2T::CopyTtree::ATTRS_TO_COPY
 my @ATTRS_TO_COPY = qw(ord t_lemma functor formeme is_member nodetype is_generated subfunctor
@@ -229,7 +230,7 @@ sub process_atree {
             log_info "UBERMWE: $match->[0]\t$match->[1]";
         } else {
             $repr = $self->build_collapsed_repr($head, $match->[1], @tnodes);
-            $repr = 'MWEMWE' . encode_base64(compress($repr), '') =~ s/=+$//r;
+            $repr = 'MWEMWE' . encode_base64(compress(encode('utf-8', $repr)), '') =~ s/=+$//r;
 
             # reproduce input format: compo \t MWE
             log_info "UBERMWE2: $match->[0]\t$match->[1]";
