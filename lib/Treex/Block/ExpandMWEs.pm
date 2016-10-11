@@ -3,6 +3,8 @@ use utf8;
 use Moose;
 use Treex::Core::Common;
 use XML::LibXML;
+use Compress::Zlib;
+use MIME::Base64;
 
 extends 'Treex::Core::Block';
 
@@ -34,7 +36,8 @@ sub set_order {
 sub process_tnode {
     my ( $self, $tnode ) = @_;
 
-    if ($tnode->t_lemma =~ m"^<MWE .*</MWE>$"i) {
+    if ($tnode->t_lemma =~ /^MWEMWE/i) {
+        $tnode->t_lemma = uncompress(decode_base64(substr($tnode->t_lemma, 6)));
         log_info "ExpandMWEs: " . $tnode->t_lemma;
         # interpret the t_lemma string as an XML tree.  for this, we
         # need to stick the XML tag onto the front.
