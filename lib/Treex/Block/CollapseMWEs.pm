@@ -416,7 +416,7 @@ sub collapse_composite_node{
         # print "delete " . $node->t_lemma . "\n";
         next if $node->isa('Treex::Core::Node::Deleted');
 
-        move_alignments($node, $head);
+        #move_alignments($node, $head);
 
         $node->remove({children=>q(rehang)});
     }
