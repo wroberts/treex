@@ -131,7 +131,7 @@ sub get_scenario_string {
     'A2T::EN::FixRelClauseNoRelPron',
     'A2T::EN::MarkReferentialIt resolver_type=nada threshold=0.5 suffix=nada_0.5', # you need Treex::External::NADA installed for this
     'A2T::EN::FindTextCoref',
-    'CollapseMWEs phrase_list_path=/home/anglistik/robertsw/.treex/share/data/models/translation/en2es/enesg-indomain-theta0.1-uuenc_mwes_trained.utf8.tsv mark_only=1',
+    'CollapseMWEs phrase_list_path=/home/anglistik/robertsw/.treex/share/data/models/translation/en2es/enesg-indomain-theta0.4-uuenc_mwes_trained.utf8.tsv mark_only=1',
     ;
 
     return $scen;
